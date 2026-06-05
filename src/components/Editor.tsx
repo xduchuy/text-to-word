@@ -200,7 +200,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
                 title="Tải tệp văn bản thô"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Sao lưu</span>
+                <span>Tải .TXT</span>
               </button>
 
               {/* Clear Button */}
