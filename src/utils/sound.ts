@@ -2,7 +2,7 @@ let sharedCtx: AudioContext | null = null;
 
 export const playClickSound = () => {
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
 
     if (!sharedCtx || sharedCtx.state === 'closed') {

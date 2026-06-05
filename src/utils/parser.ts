@@ -294,11 +294,12 @@ export function blocksToMarkdown(blocks: Block[]): string {
             .join("\n");
         case "code":
           return `\`\`\`${block.language || ""}\n${block.code}\n\`\`\``;
-        case "table":
+        case "table": {
           const headerRow = `| ${block.headers.join(" | ")} |`;
           const dividerRow = `| ${block.headers.map(() => "---").join(" | ")} |`;
           const dataRows = block.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
           return `${headerRow}\n${dividerRow}\n${dataRows}`;
+        }
         default:
           return "";
       }
@@ -333,7 +334,7 @@ export function htmlToMdInline(html: string): string {
   text = text.replace(/<u>([\s\S]*?)<\/u>/gi, "<u>$2</u>");
   
   // Protect font size tags: <font size="X"> -> [[FONT_X]] and </font> -> [[/FONT]]
-  text = text.replace(/<font\s+size="(\d+)"[^>]*>([\s\S]*?)<\/font>/gi, "[[FONT_$1]]$2[[/FONT]]");
+  text = text.replace(/<font\s+[^>]*size="(\d+)"[^>]*>([\s\S]*?)<\/font>/gi, "[[FONT_$1]]$2[[/FONT]]");
   
   // Strip all other HTML tags
   text = text.replace(/<[^>]+>/g, "");

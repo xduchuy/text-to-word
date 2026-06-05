@@ -38,11 +38,42 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
 
+  const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false);
+  const [currentFontSize, setCurrentFontSize] = useState("11");
+
   const savedRangeRef = useRef<Range | null>(null);
   const saveSelection = () => {
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
       savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+      
+      // Auto-detect font size at selection to update the displayed dropdown text
+      let parentNode = sel.anchorNode;
+      if (parentNode) {
+        if (parentNode.nodeType !== Node.ELEMENT_NODE) {
+          parentNode = parentNode.parentNode;
+        }
+        if (parentNode instanceof HTMLElement) {
+          const fontEl = parentNode.closest("font");
+          if (fontEl) {
+            const sizeAttr = fontEl.getAttribute("size");
+            if (sizeAttr) {
+              const sizeMap: Record<string, string> = {
+                "1": "10",
+                "2": "10",
+                "3": "11",
+                "4": "12",
+                "5": "14",
+                "6": "18",
+                "7": "24"
+              };
+              setCurrentFontSize(sizeMap[sizeAttr] || "11");
+            }
+          } else {
+            setCurrentFontSize("11");
+          }
+        }
+      }
     }
   };
 
@@ -258,10 +289,24 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
           <div className="flex flex-wrap items-center gap-1.5 md:gap-3 shrink-0">
             {/* Undo / Redo */}
             <div className="flex items-center border-r border-zinc-200 dark:border-[#3F3F46] pr-1.5 md:pr-2.5 gap-0.5">
-              <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+              <button 
+                onClick={() => {
+                  playClickSound();
+                  document.execCommand("undo");
+                }} 
+                className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                title="Hoàn tác (Ctrl+Z)"
+              >
                 <Undo2 className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+              <button 
+                onClick={() => {
+                  playClickSound();
+                  document.execCommand("redo");
+                }} 
+                className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                title="Làm lại (Ctrl+Y)"
+              >
                 <Redo2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -316,34 +361,69 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                   </select>
                 </div>
                 
-                {/* Font Size Selector */}
-                <div className="flex items-center gap-1 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] rounded px-1.5 py-0.5 text-xs font-mono text-zinc-800 dark:text-zinc-100">
-                  <select
-                    defaultValue="11"
-                    onChange={(e) => {
+                {/* Font Size Selector (Custom Dropdown to prevent selection blur) */}
+                <div className="relative">
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
                       playClickSound();
-                      if (savedRangeRef.current) {
-                        const sel = window.getSelection();
-                        if (sel) {
-                          sel.removeAllRanges();
-                          sel.addRange(savedRangeRef.current);
-                        }
-                      }
-                      document.execCommand("fontSize", false, e.target.value);
-                      if (document.activeElement instanceof HTMLElement) {
-                        document.activeElement.blur();
-                        document.activeElement.focus();
-                      }
+                      setShowFontSizeDropdown(!showFontSizeDropdown);
                     }}
-                    className="bg-transparent font-bold border-none outline-none cursor-pointer"
+                    className="flex items-center gap-1.5 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] rounded px-2 py-0.5 text-xs font-mono font-bold text-zinc-800 dark:text-zinc-100 cursor-pointer min-w-[42px] justify-between h-[26px]"
+                    title="Cỡ chữ"
                   >
-                    <option value="2" className="dark:bg-[#1E1E21]">10</option>
-                    <option value="3" className="dark:bg-[#1E1E21]">11</option>
-                    <option value="4" className="dark:bg-[#1E1E21]">12</option>
-                    <option value="5" className="dark:bg-[#1E1E21]">14</option>
-                    <option value="6" className="dark:bg-[#1E1E21]">18</option>
-                    <option value="7" className="dark:bg-[#1E1E21]">24</option>
-                  </select>
+                    <span>{currentFontSize}</span>
+                    <span className="text-[9px] text-zinc-400 select-none">▼</span>
+                  </button>
+                  
+                  {showFontSizeDropdown && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-30" 
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => setShowFontSizeDropdown(false)}
+                      />
+                      <div className="absolute left-0 mt-1 w-20 bg-white dark:bg-[#27272A] border border-zinc-200 dark:border-[#3F3F46] rounded shadow-lg z-40 py-1 max-h-48 overflow-y-auto">
+                        {[
+                          { label: "10", value: "2" },
+                          { label: "11", value: "3" },
+                          { label: "12", value: "4" },
+                          { label: "14", value: "5" },
+                          { label: "18", value: "6" },
+                          { label: "24", value: "7" }
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // Prevents losing focus from the contentEditable element!
+                            }}
+                            onClick={() => {
+                              playClickSound();
+                              setCurrentFontSize(opt.label);
+                              setShowFontSizeDropdown(false);
+                              
+                              if (savedRangeRef.current) {
+                                const sel = window.getSelection();
+                                if (sel) {
+                                  sel.removeAllRanges();
+                                  sel.addRange(savedRangeRef.current);
+                                }
+                              }
+                              
+                              document.execCommand("fontSize", false, opt.value);
+                            }}
+                            className={`w-full text-left px-3 py-1 text-xs hover:bg-[#185abd] hover:text-white cursor-pointer font-mono ${
+                              currentFontSize === opt.label 
+                                ? "bg-zinc-100 dark:bg-[#3F3F46] font-bold text-[#185abd] dark:text-blue-300" 
+                                : "text-zinc-800 dark:text-zinc-100"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />

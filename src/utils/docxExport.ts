@@ -48,7 +48,7 @@ function parseInlineMarkdown(text: string): InlineSegment[] {
     }
     
     // Font Size tag
-    const fMatch = sub.match(/^<font\s+size="(\d+)"[^>]*>([\s\S]*?)<\/font>/i);
+    const fMatch = sub.match(/^<font\s+[^>]*size="(\d+)"[^>]*>([\s\S]*?)<\/font>/i);
     if (fMatch) {
       const sizeValue = fMatch[1];
       let docxSize = 22; // Default 11pt
