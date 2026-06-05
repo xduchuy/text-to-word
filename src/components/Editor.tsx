@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Copy, Check, Download, Trash2, Keyboard, FileUp, Clipboard } from "lucide-react";
+import { Copy, Check, Download, Trash2, Keyboard, FileUp, Clipboard, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
 import { playClickSound } from "../utils/sound";
@@ -7,9 +7,10 @@ import { playClickSound } from "../utils/sound";
 interface EditorProps {
   text: string;
   onChange: (val: string) => void;
+  onExport?: () => void;
 }
 
-export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
+export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -202,6 +203,18 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
                 <Download className="w-3.5 h-3.5" />
                 <span>Tải .TXT</span>
               </button>
+
+              {/* Export DOCX */}
+              {onExport && (
+                <button
+                  onClick={onExport}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg bg-accent-green text-white shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer transition-all duration-100"
+                  title="Xuất bản tài liệu Word (.docx)"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Xuất .DOCX</span>
+                </button>
+              )}
 
               {/* Clear Button */}
               <button

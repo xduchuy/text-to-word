@@ -164,7 +164,7 @@ function App() {
           
           {/* Middle Editor Panel */}
           <div className="flex-1 h-full p-4 flex flex-col min-w-0">
-            <Editor text={text} onChange={setText} />
+            <Editor text={text} onChange={setText} onExport={handleExport} />
           </div>
 
           {/* Right Live Preview Panel */}
@@ -194,7 +194,7 @@ function App() {
 
           {mobileTab === "write" && (
             <div className="flex-1 h-full flex flex-col min-h-0">
-              <Editor text={text} onChange={setText} />
+              <Editor text={text} onChange={setText} onExport={handleExport} />
             </div>
           )}
 
