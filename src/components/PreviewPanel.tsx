@@ -39,7 +39,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
     <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-border lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--shadow-color)] overflow-hidden transition-all duration-300">
       {/* Panel Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-[#FAF9F5] border-b-2 border-ink-border">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* macOS window dots */}
+          <div className="flex gap-1.5 shrink-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-ink-border" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E] border border-ink-border" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F] border border-ink-border" />
+          </div>
+          
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-black">
             Xem trước tài liệu 🔍
           </span>
