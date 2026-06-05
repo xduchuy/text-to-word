@@ -10,6 +10,7 @@ import type { DocumentStyle, PageSettings } from "./utils/styles";
 import { FileText, Settings, Eye } from "lucide-react";
 
 import { playClickSound } from "./utils/sound";
+import { WordSimulatorModal } from "./components/WordSimulatorModal";
 
 const DEFAULT_SETTINGS: PageSettings = {
   pageSize: "letter",
@@ -45,6 +46,7 @@ function App() {
 
   // Mobile navigation tab state
   const [mobileTab, setMobileTab] = useState<"write" | "preview" | "settings">("write");
+  const [showWordSimulator, setShowWordSimulator] = useState(false);
 
   // 2. Parsed blocks computed from raw editor text
   const blocks = useMemo(() => parseDocument(text), [text]);
@@ -62,8 +64,13 @@ function App() {
     localStorage.setItem("composer_settings", JSON.stringify(settings));
   }, [settings]);
 
-  // 4. Trigger Word compilation and export download
-  const handleExport = async () => {
+  // 4. Trigger Word Online simulation
+  const handleExport = () => {
+    if (blocks.length === 0) return;
+    setShowWordSimulator(true);
+  };
+
+  const handleDownloadDocx = async () => {
     if (blocks.length === 0) return;
     await exportToDocx(blocks, selectedStyle, settings);
   };
@@ -203,6 +210,17 @@ function App() {
         </div>
 
       </div>
+
+      {showWordSimulator && (
+        <WordSimulatorModal
+          isOpen={showWordSimulator}
+          onClose={() => setShowWordSimulator(false)}
+          blocks={blocks}
+          style={selectedStyle}
+          settings={settings}
+          onDownload={handleDownloadDocx}
+        />
+      )}
     </div>
   );
 }
