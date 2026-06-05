@@ -313,6 +313,7 @@ export function mdToHtmlInline(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   html = html.replace(/&lt;u&gt;([\s\S]*?)&lt;\/u&gt;/gi, "<u>$1</u>");
+  html = html.replace(/&lt;font size="(\d+)"&gt;([\s\S]*?)&lt;\/font&gt;/gi, '<font size="$1">$2</font>');
   html = html.replace(/\*\*([\s\S]*?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/__([\s\S]*?)__/g, "<strong>$1</strong>");
   html = html.replace(/\*([\s\S]*?)\*/g, "<em>$1</em>");
@@ -325,14 +326,27 @@ export function htmlToMdInline(html: string): string {
   text = text.replace(/<br\s*\/?>/gi, "\n");
   text = text.replace(/<\/p>/gi, "\n");
   text = text.replace(/<p[^>]*>/gi, "");
+  
+  // Protect bold, italic, underline
   text = text.replace(/<(strong|b)>([\s\S]*?)<\/\1>/gi, "**$2**");
   text = text.replace(/<(em|i)>([\s\S]*?)<\/\1>/gi, "*$2*");
   text = text.replace(/<u>([\s\S]*?)<\/u>/gi, "<u>$2</u>");
+  
+  // Protect font size tags: <font size="X"> -> [[FONT_X]] and </font> -> [[/FONT]]
+  text = text.replace(/<font\s+size="(\d+)"[^>]*>([\s\S]*?)<\/font>/gi, "[[FONT_$1]]$2[[/FONT]]");
+  
+  // Strip all other HTML tags
   text = text.replace(/<[^>]+>/g, "");
-  if (typeof document !== "undefined") {
-    const tempDoc = document.createElement("div");
-    tempDoc.innerHTML = text;
-    return tempDoc.textContent || tempDoc.innerText || text;
-  }
+  
+  // Restore font size tags
+  text = text.replace(/\[\[FONT_(\d+)\]\]([\s\S]*?)\[\[\/FONT\]\]/g, '<font size="$1">$2</font>');
+  
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+    
   return text;
 }

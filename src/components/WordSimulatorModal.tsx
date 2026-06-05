@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import type { Block } from "../utils/parser";
 import { blocksToMarkdown, mdToHtmlInline, htmlToMdInline } from "../utils/parser";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
@@ -37,6 +37,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   const [zoom, setZoom] = useState<number>(100);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
+
+  const savedRangeRef = useRef<Range | null>(null);
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
 
   const updateBlocksState = (updatedBlocks: Block[]) => {
     const markdown = blocksToMarkdown(updatedBlocks);
@@ -314,7 +322,18 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                     defaultValue="11"
                     onChange={(e) => {
                       playClickSound();
+                      if (savedRangeRef.current) {
+                        const sel = window.getSelection();
+                        if (sel) {
+                          sel.removeAllRanges();
+                          sel.addRange(savedRangeRef.current);
+                        }
+                      }
                       document.execCommand("fontSize", false, e.target.value);
+                      if (document.activeElement instanceof HTMLElement) {
+                        document.activeElement.blur();
+                        document.activeElement.focus();
+                      }
                     }}
                     className="bg-transparent font-bold border-none outline-none cursor-pointer"
                   >
@@ -600,6 +619,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                   transformOrigin: "top center",
                   fontFamily: style.bodyFontFamily
                 }}
+                onMouseUp={saveSelection}
+                onKeyUp={saveSelection}
                 className={`shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] ${
                   marginPreset.css
                 } ${

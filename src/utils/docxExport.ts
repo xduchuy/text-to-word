@@ -26,6 +26,7 @@ interface InlineSegment {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  size?: number;
 }
 
 function parseInlineMarkdown(text: string): InlineSegment[] {
@@ -43,6 +44,30 @@ function parseInlineMarkdown(text: string): InlineSegment[] {
         underline: true,
       });
       index += uMatch[0].length;
+      continue;
+    }
+    
+    // Font Size tag
+    const fMatch = sub.match(/^<font\s+size="(\d+)"[^>]*>([\s\S]*?)<\/font>/i);
+    if (fMatch) {
+      const sizeValue = fMatch[1];
+      let docxSize = 22; // Default 11pt
+      if (sizeValue === "1") docxSize = 16;
+      else if (sizeValue === "2") docxSize = 20;
+      else if (sizeValue === "3") docxSize = 22;
+      else if (sizeValue === "4") docxSize = 24;
+      else if (sizeValue === "5") docxSize = 28;
+      else if (sizeValue === "6") docxSize = 36;
+      else if (sizeValue === "7") docxSize = 48;
+      
+      const innerSegments = parseInlineMarkdown(fMatch[2]);
+      innerSegments.forEach(seg => {
+        segments.push({
+          ...seg,
+          size: docxSize,
+        });
+      });
+      index += fMatch[0].length;
       continue;
     }
     
@@ -69,7 +94,7 @@ function parseInlineMarkdown(text: string): InlineSegment[] {
     }
     
     // Plain text
-    const nextMarkerIdx = sub.search(/\*\*|__|__|\*|_|<u>/);
+    const nextMarkerIdx = sub.search(/\*\*|__|__|\*|_|<u>|<font/);
     if (nextMarkerIdx === -1) {
       segments.push({ text: sub });
       break;
@@ -148,7 +173,7 @@ export async function exportToDocx(
                 new TextRun({
                   text: seg.text,
                   font: style.docxFont,
-                  size: 32, // 16pt
+                  size: seg.size ?? 32, // 16pt
                   bold: seg.bold ?? true,
                   italics: seg.italic,
                   underline: seg.underline ? {} : undefined,
@@ -172,7 +197,7 @@ export async function exportToDocx(
                 new TextRun({
                   text: seg.text,
                   font: style.docxFont,
-                  size: 26, // 13pt
+                  size: seg.size ?? 26, // 13pt
                   bold: seg.bold ?? true,
                   italics: seg.italic,
                   underline: seg.underline ? {} : undefined,
@@ -196,7 +221,7 @@ export async function exportToDocx(
                 new TextRun({
                   text: seg.text,
                   font: style.docxFont,
-                  size: 22, // 11pt
+                  size: seg.size ?? 22, // 11pt
                   bold: seg.bold ?? true,
                   italics: seg.italic,
                   underline: seg.underline ? {} : undefined,
@@ -221,7 +246,7 @@ export async function exportToDocx(
                 new TextRun({
                   text: seg.text,
                   font: style.docxFont,
-                  size: 22, // 11pt
+                  size: seg.size ?? 22, // 11pt
                   bold: seg.bold,
                   italics: seg.italic,
                   underline: seg.underline ? {} : undefined,
@@ -250,7 +275,7 @@ export async function exportToDocx(
                   new TextRun({
                     text: seg.text,
                     font: style.docxFont,
-                    size: 22, // 11pt
+                    size: seg.size ?? 22, // 11pt
                     bold: seg.bold,
                     italics: seg.italic,
                     underline: seg.underline ? {} : undefined,
@@ -280,7 +305,7 @@ export async function exportToDocx(
                   new TextRun({
                     text: seg.text,
                     font: style.docxFont,
-                    size: 22, // 11pt
+                    size: seg.size ?? 22, // 11pt
                     bold: seg.bold,
                     italics: seg.italic,
                     underline: seg.underline ? {} : undefined,
@@ -330,7 +355,7 @@ export async function exportToDocx(
                               new TextRun({
                                 text: seg.text,
                                 font: style.docxFont,
-                                size: 22, // 11pt
+                                size: seg.size ?? 22, // 11pt
                                 italics: seg.italic ?? true, // Quote is italicized by default
                                 bold: seg.bold,
                                 underline: seg.underline ? {} : undefined,
@@ -422,7 +447,7 @@ export async function exportToDocx(
                             new TextRun({
                               text: seg.text,
                               font: style.docxFont,
-                              size: 22,
+                              size: seg.size ?? 22,
                               bold: seg.bold ?? true,
                               italics: seg.italic,
                               underline: seg.underline ? {} : undefined,
@@ -459,7 +484,7 @@ export async function exportToDocx(
                               new TextRun({
                                 text: seg.text,
                                 font: style.docxFont,
-                                size: 22,
+                                size: seg.size ?? 22,
                                 bold: seg.bold,
                                 italics: seg.italic,
                                 underline: seg.underline ? {} : undefined,
