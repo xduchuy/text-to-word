@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;500;600;1,400&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg-paper: var(--bg-paper);
+  --color-ink-black: var(--ink-black);
+  --color-ink-light: var(--ink-light);
+  --color-accent-red: var(--accent-red);
+  --color-accent-green: var(--accent-green);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-paper-yellow: var(--paper-yellow);
+  --color-paper-blue: var(--paper-blue);
+  --color-paper-green: var(--paper-green);
+  --color-paper-pink: var(--paper-pink);
+  --color-white: var(--white);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+}
+
+:root {
+  /* Palette: Notebook & Ink */
+  --bg-paper: #F4F3ED; /* Màu giấy nhám */
+  --ink-black: #1A1A1A; /* Mực đen đậm */
+  --ink-light: #5A5A5A;
+  --accent-red: #E24A32; /* Bút đỏ */
+  --accent-green: #2E7D32; /* Bút xanh lá */
+  --accent-blue: #2563EB; /* Bút bi xanh */
+  --accent-yellow: #FDE047; /* Bút dạ quang */
+  --white: #FFFFFF;
+  
+  /* Typography */
+  --font-heading: 'Georgia', 'Times New Roman', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Layout */
+  --border-thick: 2px solid var(--ink-black);
+  --shadow-solid: 4px 4px 0px var(--ink-black);
+  --shadow-hover: 6px 6px 0px var(--ink-black);
+
+  /* Note paper colors */
+  --paper-yellow: #FEF9C3;
+  --paper-blue: #E0F2FE;
+  --paper-green: #DCFCE7;
+  --paper-pink: #FCE7F3;
+}
+
+.dark {
+  /* Dark Notebook Palette - Deep Charcoal & Pitch Black */
+  --bg-paper: #09090A;
+  --ink-black: #E4E4E7;
+  --ink-light: #7E7E86;
+  --accent-red: #F87171;
+  --accent-green: #34D399;
+  --accent-blue: #60A5FA;
+  --accent-yellow: #FBBF24;
+  --white: #121214;
+  
+  --border-thick: 2px solid var(--ink-black);
+  --shadow-solid: 4px 4px 0px var(--ink-black);
+  --shadow-hover: 6px 6px 0px var(--ink-black);
+
+  /* Dark note paper colors - Rich Deep Notes */
+  --paper-yellow: #1D1B10;
+  --paper-blue: #121A28;
+  --paper-green: #101E17;
+  --paper-pink: #1E1218;
+}
+
+/* Core scrollbar aesthetics */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-paper);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ink-light);
+  border: 2px solid var(--bg-paper);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-black);
+}
+
+/* Base Body Styles */
+body {
+  margin: 0;
+  background-color: var(--bg-paper);
+  color: var(--ink-black);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  /* Hiệu ứng giấy kẻ chấm lưới (Dot Grid) làm hình nền */
+  background-image: radial-gradient(var(--ink-light) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -10px -10px;
+  background-color: var(--bg-paper);
+}
+
+/* Custom micro-animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 15s linear infinite;
+}
+
+/* Brutalist Solid UI Buttons */
+.brutalist-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  border: var(--border-thick);
+  background-color: var(--white);
+  color: var(--ink-black);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 3px 3px 0px var(--ink-black);
+  transition: all 0.1s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.brutalist-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+.brutalist-btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px var(--ink-black);
+}
+
+.brutalist-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 1px 1px 0px var(--ink-black);
+}
+
+/* Brutalist Solid UI Cards */
+.brutalist-card {
+  background-color: var(--white);
+  border: var(--border-thick);
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-solid);
+  transition: all 0.2s ease;
+}
+
+.brutalist-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Lined Notebook Paper Pattern */
+.bg-notebook-lines {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(156, 163, 175, 0.15) 31px,
+    rgba(156, 163, 175, 0.15) 32px
+  );
+  background-position: 0 1.5rem;
+}
+
+.dark .bg-notebook-lines {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(75, 85, 99, 0.25) 31px,
+    rgba(75, 85, 99, 0.25) 32px
+  );
+  background-position: 0 1.5rem;
+}
+
+/* Highlight Marker */
+.highlight-yellow {
+  background-color: var(--accent-yellow);
+  color: #1A1A1A;
+  padding: 0 4px;
+  font-weight: bold;
+}
+
+/* Smooth layout transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
