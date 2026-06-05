@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { playClickSound } from "../utils/sound";
+
 export const ThemeToggle: React.FC = () => {
   const [theme, setTheme] = useState<"light" | "dark">(
     () => (localStorage.getItem("theme") as "light" | "dark") || "light"
@@ -16,9 +18,14 @@ export const ThemeToggle: React.FC = () => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  const handleToggle = () => {
+    playClickSound();
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
   return (
     <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={handleToggle}
       className="relative p-2 bg-white dark:bg-[#27272A] text-ink-black dark:text-zinc-100 border-2 border-ink-border dark:border-[#3F3F46] rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] dark:shadow-[2px_2px_0px_#060608] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] dark:hover:shadow-[3px_3px_0px_#060608] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer overflow-hidden transition-all duration-100"
       aria-label="Toggle Theme"
     >

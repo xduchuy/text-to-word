@@ -9,6 +9,8 @@ import { documentStyles } from "./utils/styles";
 import type { DocumentStyle, PageSettings } from "./utils/styles";
 import { FileText, Settings, Eye } from "lucide-react";
 
+import { playClickSound } from "./utils/sound";
+
 const DEFAULT_SETTINGS: PageSettings = {
   pageSize: "letter",
   orientation: "portrait",
@@ -89,7 +91,10 @@ function App() {
         {/* Mobile Tab Selectors */}
         <div className="flex lg:hidden items-center rounded-lg bg-[#F4F3ED] dark:bg-[#121214] border-2 border-ink-border dark:border-[#3F3F46] p-0.5 max-w-[320px] shadow-[2px_2px_0px_var(--shadow-color)] dark:shadow-[2px_2px_0px_#060608]">
           <button
-            onClick={() => setMobileTab("settings")}
+            onClick={() => {
+              playClickSound();
+              setMobileTab("settings");
+            }}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "settings"
                 ? "bg-accent-yellow text-ink-black border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
@@ -100,7 +105,10 @@ function App() {
             <span className="hidden sm:inline ml-0.5">Thiết lập</span>
           </button>
           <button
-            onClick={() => setMobileTab("write")}
+            onClick={() => {
+              playClickSound();
+              setMobileTab("write");
+            }}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "write"
                 ? "bg-accent-blue text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
@@ -111,7 +119,10 @@ function App() {
             <span className="hidden sm:inline ml-0.5">Soạn thảo</span>
           </button>
           <button
-            onClick={() => setMobileTab("preview")}
+            onClick={() => {
+              playClickSound();
+              setMobileTab("preview");
+            }}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "preview"
                 ? "bg-accent-green text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"

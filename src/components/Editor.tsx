@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Copy, Check, Download, Trash2, Keyboard, FileUp, Clipboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
+import { playClickSound } from "../utils/sound";
 
 interface EditorProps {
   text: string;
@@ -94,6 +95,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
   };
 
   const handleCopy = async () => {
+    playClickSound();
     try {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
@@ -104,6 +106,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
   };
 
   const handlePaste = async () => {
+    playClickSound();
     try {
       const clipboardText = await navigator.clipboard.readText();
       if (clipboardText) {
@@ -118,6 +121,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
   };
 
   const handleDownloadTxt = () => {
+    playClickSound();
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -161,7 +165,10 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
             <>
               {/* Keyboard Shortcuts Trigger */}
               <button
-                onClick={() => setShowShortcuts(!showShortcuts)}
+                onClick={() => {
+                  playClickSound();
+                  setShowShortcuts(!showShortcuts);
+                }}
                 className="p-1.5 border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black cursor-pointer transition-all duration-100"
                 title="Phím tắt soạn thảo"
               >
@@ -199,6 +206,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
               {/* Clear Button */}
               <button
                 onClick={() => {
+                  playClickSound();
                   if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ văn bản?")) {
                     onChange("");
                   }

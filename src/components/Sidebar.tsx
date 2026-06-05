@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { documentStyles } from "../utils/styles";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
 import { FileOutput, Settings, Compass, Info } from "lucide-react";
+import { playClickSound } from "../utils/sound";
 
 interface SidebarProps {
   selectedStyle: DocumentStyle;
@@ -24,6 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [showIosGuide, setShowIosGuide] = useState(false);
 
   const handleExport = async () => {
+    playClickSound();
     setIsExporting(true);
     try {
       await onExport();
@@ -35,6 +37,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const updateSetting = <K extends keyof PageSettings>(key: K, value: PageSettings[K]) => {
+    if (key !== "headerText") {
+      playClickSound();
+    }
     onSettingsChange({
       ...settings,
       [key]: value,
@@ -69,7 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return (
               <button
                 key={styleItem.id}
-                onClick={() => onStyleSelect(styleItem)}
+                onClick={() => {
+                  playClickSound();
+                  onStyleSelect(styleItem);
+                }}
                 className={`group flex flex-col items-start p-3 border-2 text-left cursor-pointer transition-all duration-100 ${
                   isSelected
                     ? "bg-accent-yellow/15 border-ink-border shadow-[3px_3px_0px_var(--shadow-color)] translate-x-[-1px] translate-y-[-1px]"
@@ -243,7 +251,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* iOS PWA Installation Guide */}
         <div className="mt-4 border-2 border-ink-border bg-white shadow-[2px_2px_0px_var(--shadow-color)] overflow-hidden">
           <button
-            onClick={() => setShowIosGuide(!showIosGuide)}
+            onClick={() => {
+              playClickSound();
+              setShowIosGuide(!showIosGuide);
+            }}
             className="w-full flex items-center justify-between p-2.5 text-[10px] font-mono font-bold text-ink-black hover:bg-accent-yellow/10 transition-colors text-left select-none cursor-pointer"
           >
             <span>CÀI ĐẶT TRÊN IPHONE 📱</span>

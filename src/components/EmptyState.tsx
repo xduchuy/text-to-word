@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Briefcase, FileCode, Sparkles } from "lucide-react";
+import { playClickSound } from "../utils/sound";
 
 interface EmptyStateProps {
   onSelectTemplate: (text: string) => void;
@@ -77,7 +78,7 @@ Deep work là khả năng tập trung cao độ không bị phân tâm vào mộ
 2. **Chấp nhận sự nhàm chán**: Thực hành việc ngồi yên lặng mà không kiểm tra thiết bị để rèn luyện lại khả năng chú ý.
 3. **Nghi thức hóa không gian làm việc**: Thiết lập ranh giới vật lý sạch sẽ dành riêng cho các tác vụ cần tập trung cao độ.
 
-> "Để sản xuất ở mức hiệu suất cao nhất, bạn cần làm việc trong thời gian dài với sự tập trung tối đa vào một nhiệm vụ duy nhất mà không bị phân tâm." — Cal Newport
+> "Để sản xuất ở mức hiệu suất cao nhất, bạn cần làm việc trong thời gian dài with sự tập trung tối đa vào một nhiệm vụ duy nhất mà không bị phân tâm." — Cal Newport
 
 ## Danh sách công việc hàng ngày
 - Buổi sáng: 90 phút tập trung viết mã nguồn cốt lõi (Core Code)
@@ -144,7 +145,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
 
       <motion.button
         variants={itemVariants}
-        onClick={() => onSelectTemplate("# Tiêu đề tài liệu\n\nNhập hoặc dán nội dung của bạn tại đây...")}
+        onClick={() => {
+          playClickSound();
+          onSelectTemplate("# Tiêu đề tài liệu\n\nNhập hoặc dán nội dung của bạn tại đây...");
+        }}
         className="mb-8 px-6 py-3 border-2 border-ink-border bg-accent-blue text-white font-mono font-bold text-sm shadow-[4px_4px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_var(--shadow-color)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none cursor-pointer transition-all duration-100"
       >
         Bắt đầu trang trống 📄
@@ -160,7 +164,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
             return (
               <button
                 key={tpl.title}
-                onClick={() => onSelectTemplate(tpl.content)}
+                onClick={() => {
+                  playClickSound();
+                  onSelectTemplate(tpl.content);
+                }}
                 className={`flex items-start p-3.5 border-2 border-ink-border bg-white cursor-pointer shadow-[3px_3px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-100 text-left w-full group`}
               >
                 <div className="p-2 border-2 border-ink-border bg-[#FAF9F5] text-ink-black mr-4 shrink-0 shadow-[1px_1px_0px_var(--shadow-color)]">
