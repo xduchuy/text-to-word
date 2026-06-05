@@ -69,16 +69,16 @@ function App() {
   return (
     <div className="flex flex-col h-screen w-screen bg-bg-paper text-ink-black overflow-hidden font-sans transition-colors duration-300">
       {/* Top Navbar */}
-      <header className="h-16 shrink-0 flex items-center justify-between px-4 bg-white border-b-4 border-ink-border z-20 transition-colors">
+      <header className="h-16 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-[#1B1B1E] border-b-4 border-ink-border dark:border-[#3F3F46] z-20 transition-colors">
         <div className="flex items-center gap-2 lg:hidden">
-          <span className="font-heading font-black text-xs sm:text-sm bg-ink-black text-white dark:text-zinc-900 dark:bg-ink-black px-2 py-0.5 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider">
+          <span className="font-heading font-black text-xs sm:text-sm bg-ink-black text-white px-2 py-0.5 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider">
             Wordify.
           </span>
         </div>
         
         {/* Desktop Title */}
         <div className="hidden lg:flex items-center gap-2">
-          <span className="font-heading font-black text-base bg-ink-black text-white dark:text-zinc-900 dark:bg-ink-black px-3 py-1 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider mr-3">
+          <span className="font-heading font-black text-base bg-ink-black text-white px-3 py-1 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider mr-3">
             Wordify.
           </span>
           <span className="text-[10px] bg-accent-yellow text-ink-black px-2 py-0.5 rounded-xs border-2 border-ink-border font-mono font-bold uppercase tracking-wider -rotate-1">
@@ -87,13 +87,13 @@ function App() {
         </div>
 
         {/* Mobile Tab Selectors */}
-        <div className="flex lg:hidden items-center rounded-lg bg-bg-paper border-2 border-ink-border p-0.5 max-w-[320px] shadow-[2px_2px_0px_var(--shadow-color)]">
+        <div className="flex lg:hidden items-center rounded-lg bg-[#F4F3ED] dark:bg-[#121214] border-2 border-ink-border dark:border-[#3F3F46] p-0.5 max-w-[320px] shadow-[2px_2px_0px_var(--shadow-color)] dark:shadow-[2px_2px_0px_#060608]">
           <button
             onClick={() => setMobileTab("settings")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "settings"
                 ? "bg-accent-yellow text-ink-black border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
-                : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
+                : "text-ink-light dark:text-zinc-400 hover:text-ink-black dark:hover:text-zinc-100"
             }`}
           >
             <Settings className="w-5 h-5" />
@@ -104,7 +104,7 @@ function App() {
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "write"
                 ? "bg-accent-blue text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
-                : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
+                : "text-ink-light dark:text-zinc-400 hover:text-ink-black dark:hover:text-zinc-100"
             }`}
           >
             <FileText className="w-5 h-5" />
@@ -115,7 +115,7 @@ function App() {
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "preview"
                 ? "bg-accent-green text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
-                : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
+                : "text-ink-light dark:text-zinc-400 hover:text-ink-black dark:hover:text-zinc-100"
             }`}
           >
             <Eye className="w-5 h-5" />

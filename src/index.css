@@ -53,29 +53,9 @@
 }
 
 .dark {
-  /* Dark Notebook Palette - Deep Charcoal & Slate Gray */
-  --bg-paper: #0E0E11;
-  --ink-black: #E4E4E7;
-  --ink-light: #9CA3AF;
-  --accent-red: #F87171;
-  --accent-green: #34D399;
-  --accent-blue: #60A5FA;
-  --accent-yellow: #FBBF24;
-  --white: #1B1B1E;
-  
-  --border-color: #3F3F46; /* Harmonious dark-grey border instead of glowing off-white */
-  --shadow-color: #060608; /* Real deep shadow in dark mode */
-  --dot-color: rgba(228, 228, 231, 0.07);
-
-  --border-thick: 2px solid var(--border-color);
-  --shadow-solid: 4px 4px 0px var(--shadow-color);
-  --shadow-hover: 6px 6px 0px var(--shadow-color);
-
-  /* Dark note paper colors - Rich Deep Notes */
-  --paper-yellow: #1D1B10;
-  --paper-blue: #121A28;
-  --paper-green: #101E17;
-  --paper-pink: #1E1218;
+  /* Dark Canvas - ONLY override outer background and dot pattern */
+  --bg-paper: #121214;
+  --dot-color: rgba(228, 228, 231, 0.08);
 }
 
 /* Core scrollbar aesthetics */
@@ -187,15 +167,6 @@ body {
   background-position: 0 1.5rem;
 }
 
-.dark .bg-notebook-lines {
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 31px,
-    rgba(75, 85, 99, 0.25) 31px,
-    rgba(75, 85, 99, 0.25) 32px
-  );
-  background-position: 0 1.5rem;
-}
 
 /* Highlight Marker */
 .highlight-yellow {

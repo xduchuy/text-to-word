@@ -130,14 +130,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
 
       <motion.h2
         variants={itemVariants}
-        className="text-2xl md:text-3xl font-heading font-black text-ink-black dark:text-zinc-100 tracking-tight mb-3"
+        className="text-2xl md:text-3xl font-heading font-black text-ink-black tracking-tight mb-3"
       >
         Soạn thảo dễ dàng ✍️
       </motion.h2>
 
       <motion.p
         variants={itemVariants}
-        className="text-xs font-mono font-bold text-ink-light dark:text-zinc-400 mb-6 max-w-md leading-relaxed"
+        className="text-xs font-mono font-bold text-ink-light mb-6 max-w-md leading-relaxed"
       >
         Dán văn bản thô hoặc Markdown, hoặc kéo thả tệp tin để bắt đầu. Hệ thống sẽ tự động phân tích định dạng, áp dụng giao diện và tạo tài liệu Word chuyên nghiệp.
       </motion.p>
@@ -151,7 +151,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
       </motion.button>
 
       <motion.div variants={itemVariants} className="w-full text-left">
-        <h3 className="text-xs font-mono font-bold text-ink-black dark:text-zinc-300 tracking-wider uppercase mb-4 pl-1">
+        <h3 className="text-xs font-mono font-bold text-ink-black tracking-wider uppercase mb-4 pl-1">
           Hoặc bắt đầu bằng tài liệu mẫu 👇
         </h3>
         <div className="grid gap-4 w-full">
@@ -163,14 +163,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
                 onClick={() => onSelectTemplate(tpl.content)}
                 className={`flex items-start p-3.5 border-2 border-ink-border bg-white cursor-pointer shadow-[3px_3px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-100 text-left w-full group`}
               >
-                <div className="p-2 border-2 border-ink-border bg-[#FAF9F5] dark:bg-white text-ink-black dark:text-zinc-200 mr-4 shrink-0 shadow-[1px_1px_0px_var(--shadow-color)]">
+                <div className="p-2 border-2 border-ink-border bg-[#FAF9F5] text-ink-black mr-4 shrink-0 shadow-[1px_1px_0px_var(--shadow-color)]">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-mono font-bold text-xs text-ink-black dark:text-zinc-200">
+                  <h4 className="font-mono font-bold text-xs text-ink-black">
                     {tpl.title}
                   </h4>
-                  <p className="text-[10px] font-mono text-ink-light dark:text-zinc-400 mt-1 line-clamp-1 leading-normal">
+                  <p className="text-[10px] font-mono text-ink-light mt-1 line-clamp-1 leading-normal">
                     {tpl.description}
                   </p>
                 </div>

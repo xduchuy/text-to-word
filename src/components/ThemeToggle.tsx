@@ -19,7 +19,7 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="relative p-2 bg-white text-ink-black border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer overflow-hidden transition-all duration-100"
+      className="relative p-2 bg-white dark:bg-[#27272A] text-ink-black dark:text-zinc-100 border-2 border-ink-border dark:border-[#3F3F46] rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] dark:shadow-[2px_2px_0px_#060608] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] dark:hover:shadow-[3px_3px_0px_#060608] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer overflow-hidden transition-all duration-100"
       aria-label="Toggle Theme"
     >
       <AnimatePresence mode="wait" initial={false}>
