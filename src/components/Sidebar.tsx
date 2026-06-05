@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-full lg:w-80 flex flex-col h-full bg-[#FAF9F5] dark:bg-white border-r-0 lg:border-r-4 border-ink-black overflow-y-auto p-5 transition-colors shrink-0">
       {/* Brand Logo & Title */}
       <div className="hidden lg:flex items-center gap-2.5 mb-7 pb-4 border-b-2 border-dashed border-ink-black/25">
-        <div className="w-10 h-10 border-2 border-ink-black rounded-lg bg-accent-yellow flex items-center justify-center shadow-[2px_2px_0px_var(--ink-black)] text-ink-black">
+        <div className="w-10 h-10 border-2 border-ink-black rounded-lg bg-[#1A1A1A] dark:bg-[#121214] flex items-center justify-center shadow-[2px_2px_0px_var(--ink-black)] text-white dark:text-zinc-200">
           <Compass className="w-5 h-5 animate-spin-slow" />
         </div>
         <div>
