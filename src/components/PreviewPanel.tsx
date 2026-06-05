@@ -259,7 +259,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
             {/* Footer simulation */}
             {settings.includePageNumbers && (
               <div className="border-t border-zinc-200 mt-8 pt-2 flex justify-between items-center text-[10px] font-sans text-zinc-400 tracking-wider">
-                <span>AI Word Composer - Công cụ xuất bản</span>
+                <span>Wordify - Công cụ xuất bản</span>
                 <span>Trang 1 trên 1</span>
               </div>
             )}

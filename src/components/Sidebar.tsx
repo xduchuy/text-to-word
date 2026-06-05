@@ -21,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   disabled,
 }) => {
   const [isExporting, setIsExporting] = useState(false);
+  const [showIosGuide, setShowIosGuide] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -49,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div>
           <h1 className="font-heading font-black text-ink-black dark:text-white text-sm tracking-tight leading-none">
-            AI Word Composer
+            Wordify.
           </h1>
           <span className="text-[10px] font-mono text-ink-light dark:text-zinc-400 mt-1 block">
             Định dạng tài liệu tự động
@@ -237,6 +238,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <p>
             Các tài liệu được xuất có định dạng chuẩn tương thích tốt với Microsoft Word, Google Docs và Apple Pages.
           </p>
+        </div>
+
+        {/* iOS PWA Installation Guide */}
+        <div className="mt-4 border-2 border-ink-black bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_var(--ink-black)] overflow-hidden">
+          <button
+            onClick={() => setShowIosGuide(!showIosGuide)}
+            className="w-full flex items-center justify-between p-2.5 text-[10px] font-mono font-bold text-ink-black dark:text-zinc-200 hover:bg-accent-yellow/10 transition-colors text-left select-none cursor-pointer"
+          >
+            <span>CÀI ĐẶT TRÊN IPHONE 📱</span>
+            <span className="text-xs">{showIosGuide ? "▲" : "▼"}</span>
+          </button>
+          
+          {showIosGuide && (
+            <div className="p-3 border-t-2 border-dashed border-ink-black/20 text-[10px] font-mono text-ink-black dark:text-zinc-300 leading-normal space-y-2 bg-bg-paper/30">
+              <p>Để thêm **Wordify** vào màn hình chính iPhone:</p>
+              <ol className="list-decimal pl-4 space-y-1.5 font-bold">
+                <li>Mở trang này bằng trình duyệt <strong className="text-accent-blue dark:text-blue-400">Safari</strong>.</li>
+                <li>Nhấn vào biểu tượng **Chia sẻ** (Share) 📤 ở thanh công cụ dưới cùng.</li>
+                <li>Cuộn xuống dưới và chọn **"Thêm vào MH chính"** (Add to Home Screen) 📲.</li>
+                <li>Nhấn **"Thêm"** (Add) ở góc trên bên phải để hoàn tất.</li>
+              </ol>
+            </div>
+          )}
         </div>
       </div>
     </aside>
