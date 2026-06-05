@@ -268,3 +268,40 @@ export function parseDocument(text: string): Block[] {
 
   return blocks;
 }
+
+export function blocksToMarkdown(blocks: Block[]): string {
+  return blocks
+    .map((block) => {
+      switch (block.type) {
+        case "title":
+          return `# ${block.text}`;
+        case "heading1":
+          return `# ${block.text}`;
+        case "heading2":
+          return `## ${block.text}`;
+        case "heading3":
+          return `### ${block.text}`;
+        case "paragraph":
+          return block.text;
+        case "bullet-list":
+          return block.items.map((item) => `- ${item}`).join("\n");
+        case "numbered-list":
+          return block.items.map((item, idx) => `${idx + 1}. ${item}`).join("\n");
+        case "quote":
+          return block.text
+            .split("\n")
+            .map((line) => `> ${line}`)
+            .join("\n");
+        case "code":
+          return `\`\`\`${block.language || ""}\n${block.code}\n\`\`\``;
+        case "table":
+          const headerRow = `| ${block.headers.join(" | ")} |`;
+          const dividerRow = `| ${block.headers.map(() => "---").join(" | ")} |`;
+          const dataRows = block.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
+          return `${headerRow}\n${dividerRow}\n${dataRows}`;
+        default:
+          return "";
+      }
+    })
+    .join("\n\n");
+}

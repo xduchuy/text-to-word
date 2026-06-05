@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { Block } from "../utils/parser";
+import { blocksToMarkdown } from "../utils/parser";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
 import { marginPresets } from "../utils/styles";
 import {
@@ -16,6 +17,7 @@ interface WordSimulatorModalProps {
   style: DocumentStyle;
   settings: PageSettings;
   onDownload: () => void;
+  onChange: (val: string) => void;
 }
 
 export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
@@ -25,11 +27,82 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   style,
   settings,
   onDownload,
+  onChange,
 }) => {
   const [activeTab, setActiveTab] = useState<"home" | "insert" | "layout" | "view">("home");
   const [zoom, setZoom] = useState<number>(100);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
+
+  const updateBlocksState = (updatedBlocks: Block[]) => {
+    const markdown = blocksToMarkdown(updatedBlocks);
+    onChange(markdown);
+  };
+
+  const updateBlockText = (blockIdx: number, newText: string) => {
+    const updated = blocks.map((block, idx) => {
+      if (idx === blockIdx) {
+        if (block.type === "title" || block.type === "heading1" || block.type === "heading2" || block.type === "heading3" || block.type === "paragraph" || block.type === "quote") {
+          return { ...block, text: newText };
+        }
+      }
+      return block;
+    });
+    updateBlocksState(updated);
+  };
+
+  const updateListItemText = (blockIdx: number, itemIdx: number, newText: string) => {
+    const updated = blocks.map((block, idx) => {
+      if (idx === blockIdx) {
+        if (block.type === "bullet-list" || block.type === "numbered-list") {
+          const newItems = block.items.map((item, iIdx) => iIdx === itemIdx ? newText : item);
+          return { ...block, items: newItems };
+        }
+      }
+      return block;
+    });
+    updateBlocksState(updated);
+  };
+
+  const updateCodeBlockText = (blockIdx: number, newText: string) => {
+    const updated = blocks.map((block, idx) => {
+      if (idx === blockIdx) {
+        if (block.type === "code") {
+          return { ...block, code: newText };
+        }
+      }
+      return block;
+    });
+    updateBlocksState(updated);
+  };
+
+  const updateTableHeaderText = (blockIdx: number, headerIdx: number, newText: string) => {
+    const updated = blocks.map((block, idx) => {
+      if (idx === blockIdx) {
+        if (block.type === "table") {
+          const newHeaders = block.headers.map((h, i) => i === headerIdx ? newText : h);
+          return { ...block, headers: newHeaders };
+        }
+      }
+      return block;
+    });
+    updateBlocksState(updated);
+  };
+
+  const updateTableCellText = (blockIdx: number, rowIdx: number, cellIdx: number, newText: string) => {
+    const updated = blocks.map((block, idx) => {
+      if (idx === blockIdx) {
+        if (block.type === "table") {
+          const newRows = block.rows.map((row, r) => 
+            r === rowIdx ? row.map((cell, c) => c === cellIdx ? newText : cell) : row
+          );
+          return { ...block, rows: newRows };
+        }
+      }
+      return block;
+    });
+    updateBlocksState(updated);
+  };
 
   if (!isOpen) return null;
 
@@ -73,7 +146,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
               <span className="hidden sm:inline">Word</span>
               <span className="opacity-60 hidden sm:inline">|</span>
               <span className="truncate max-w-[150px] md:max-w-[300px]">
-                {blocks.find(b => b.type === "title")?.text || "tai-lieu"}.docx
+                {blocks.find(b => b.type === "title")?.text || blocks.find(b => b.type === "heading1")?.text || "tai-lieu"}.docx
               </span>
               <span className="bg-[#106ebe] text-[9px] px-1.5 py-0.5 rounded-xs font-mono font-bold tracking-wider uppercase ml-1.5 text-blue-100">
                 Đã Lưu
@@ -378,10 +451,13 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <h1
                             key={idx}
-                            className={`text-3xl font-extrabold tracking-tight pb-3 mb-6 border-b border-zinc-200 dark:border-[#3F3F46] ${
+                            className={`text-3xl font-extrabold tracking-tight pb-3 mb-6 border-b border-zinc-200 dark:border-[#3F3F46] outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
                               style.id === "academic" ? "text-center" : "text-left"
                             } ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
                             {block.text}
                           </h1>
@@ -391,8 +467,11 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <h2
                             key={idx}
-                            className={`text-2xl font-bold tracking-tight mt-8 mb-3 ${style.headerFontClass}`}
+                            className={`text-2xl font-bold tracking-tight mt-8 mb-3 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
                             {block.text}
                           </h2>
@@ -402,8 +481,11 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <h3
                             key={idx}
-                            className={`text-xl font-bold tracking-tight mt-6 mb-2.5 ${style.headerFontClass}`}
+                            className={`text-xl font-bold tracking-tight mt-6 mb-2.5 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
                             {block.text}
                           </h3>
@@ -413,8 +495,11 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <h4
                             key={idx}
-                            className={`text-lg font-semibold mt-5 mb-2 ${style.headerFontClass}`}
+                            className={`text-lg font-semibold mt-5 mb-2 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
                             {block.text}
                           </h4>
@@ -424,9 +509,12 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <p 
                             key={idx} 
-                            className={`${style.bodyFontClass} text-[14px] leading-relaxed mb-4 ${
+                            className={`${style.bodyFontClass} text-[14px] leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
                               style.justifyText ? "text-justify" : "text-left"
                             } ${style.textClass}`}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
                             {block.text}
                           </p>
@@ -439,7 +527,15 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             className={`list-disc pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                           >
                             {block.items.map((item, itemIdx) => (
-                              <li key={itemIdx}>{item}</li>
+                              <li
+                                key={itemIdx}
+                                className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateListItemText(idx, itemIdx, e.currentTarget.innerText)}
+                              >
+                                {item}
+                              </li>
                             ))}
                           </ul>
                         );
@@ -451,7 +547,15 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             className={`list-decimal pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                           >
                             {block.items.map((item, itemIdx) => (
-                              <li key={itemIdx}>{item}</li>
+                              <li
+                                key={itemIdx}
+                                className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateListItemText(idx, itemIdx, e.currentTarget.innerText)}
+                              >
+                                {item}
+                              </li>
                             ))}
                           </ol>
                         );
@@ -460,18 +564,18 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <div
                             key={idx}
-                            className="border-l-4 pl-4 py-2 my-4 italic text-[14px] leading-relaxed transition-all"
+                            className="border-l-4 pl-4 py-2 my-4 italic text-[14px] leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
                             style={{
                               borderColor: `#${style.quoteBorderColor}`,
                               backgroundColor: style.quoteBgColor ? `#${style.quoteBgColor}` : "transparent",
                               color: `#${style.docxTextColor}`,
+                              whiteSpace: "pre-wrap",
                             }}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
                           >
-                            {block.text.split("\n").map((line, lIdx) => (
-                              <p key={lIdx} className="mb-1 last:mb-0">
-                                {line}
-                              </p>
-                            ))}
+                            {block.text}
                           </div>
                         );
 
@@ -486,7 +590,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             }}
                           >
                             <pre className="text-zinc-800 dark:text-zinc-200">
-                              <code>{block.code}</code>
+                              <code
+                                className="outline-none block hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateCodeBlockText(idx, e.currentTarget.innerText)}
+                              >
+                                {block.code}
+                              </code>
                             </pre>
                           </div>
                         );
@@ -509,8 +620,11 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                   {block.headers.map((header, hIdx) => (
                                     <th
                                       key={hIdx}
-                                      className="p-3 font-semibold text-zinc-800 dark:text-zinc-200"
+                                      className="p-3 font-semibold text-zinc-800 dark:text-zinc-200 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
                                       style={{ color: style.tableHeaderTextColor }}
+                                      contentEditable
+                                      suppressContentEditableWarning
+                                      onBlur={(e) => updateTableHeaderText(idx, hIdx, e.currentTarget.innerText)}
                                     >
                                       {header}
                                     </th>
@@ -534,7 +648,13 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                       }}
                                     >
                                       {row.map((cell, cIdx) => (
-                                        <td key={cIdx} className="p-3 text-zinc-600 dark:text-zinc-300">
+                                        <td
+                                          key={cIdx}
+                                          className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                          contentEditable
+                                          suppressContentEditableWarning
+                                          onBlur={(e) => updateTableCellText(idx, rIdx, cIdx, e.currentTarget.innerText)}
+                                        >
                                           {cell}
                                         </td>
                                       ))}

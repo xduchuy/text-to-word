@@ -504,7 +504,7 @@ export async function exportToDocx(
   const blob = await Packer.toBlob(doc);
   
   // Extract title block for filename if it exists
-  const titleBlock = blocks.find((b) => b.type === "title");
+  const titleBlock = blocks.find((b) => b.type === "title") || blocks.find((b) => b.type === "heading1");
   const baseName = titleBlock
     ? titleBlock.text
         .toLowerCase()

@@ -219,6 +219,7 @@ function App() {
           style={selectedStyle}
           settings={settings}
           onDownload={handleDownloadDocx}
+          onChange={setText}
         />
       )}
     </div>
