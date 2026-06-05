@@ -139,9 +139,6 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
             <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F] border border-ink-border" />
           </div>
           
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-black">
-            Bản thảo 📝
-          </span>
           {text.length > 0 && (
             <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-border font-bold rotate-1">
               Định dạng tức thời

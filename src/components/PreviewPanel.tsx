@@ -47,9 +47,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
             <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F] border border-ink-border" />
           </div>
           
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-black">
-            Xem trước tài liệu 🔍
-          </span>
           <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-border font-bold rotate-1">
             Bản in trực quan
           </span>
