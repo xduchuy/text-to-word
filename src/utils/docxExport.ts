@@ -409,7 +409,25 @@ export async function exportToDocx(
             spacing: { before: 200 },
             children: [
               new TextRun({
-                children: ["Page ", PageNumber.CURRENT, " of ", PageNumber.TOTAL_PAGES],
+                text: "Page ",
+                font: style.docxFont,
+                size: 18,
+                color: "94A3B8",
+              }),
+              new TextRun({
+                children: [PageNumber.CURRENT],
+                font: style.docxFont,
+                size: 18,
+                color: "94A3B8",
+              }),
+              new TextRun({
+                text: " of ",
+                font: style.docxFont,
+                size: 18,
+                color: "94A3B8",
+              }),
+              new TextRun({
+                children: [PageNumber.TOTAL_PAGES],
                 font: style.docxFont,
                 size: 18,
                 color: "94A3B8",

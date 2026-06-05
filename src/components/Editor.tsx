@@ -43,12 +43,12 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
         insertAtCursor("> ");
       } else if (e.key === "c") {
         e.preventDefault();
-        insertAtCursor("```\n\n```");
+        insertAtCursor("```\n\n```", 4);
       }
     }
   };
 
-  const insertAtCursor = (markup: string) => {
+  const insertAtCursor = (markup: string, cursorOffset?: number) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -65,7 +65,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
     // Reposition cursor after inserting
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = start + markup.length;
+      const newCursorPos = cursorOffset !== undefined ? start + cursorOffset : start + markup.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 50);
   };

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Block } from "../utils/parser";
-import { marginPresets, pageDimensions } from "../utils/styles";
+import { marginPresets } from "../utils/styles";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
 import { FileText } from "lucide-react";
 
@@ -12,7 +12,6 @@ interface PreviewPanelProps {
 
 export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, settings }) => {
   const marginPreset = marginPresets[settings.margins];
-  const dimensions = pageDimensions[settings.pageSize];
 
   const getHeadingStyle = (type: string) => {
     switch (type) {
@@ -71,8 +70,12 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
               style.pageBgClass
             } ${marginPreset.css} ${
               isLandscape
-                ? `${dimensions.heightCss} w-full max-w-[850px]` // Swap height/width visual cues for landscape
-                : `${dimensions.widthCss} w-full`
+                ? settings.pageSize === "letter"
+                  ? "w-[11in] min-h-[8.5in]"
+                  : "w-[11.69in] min-h-[8.27in]"
+                : settings.pageSize === "letter"
+                  ? "w-[8.5in] min-h-[11in]"
+                  : "w-[8.27in] min-h-[11.69in]"
             }`}
           >
             {/* Header simulation */}

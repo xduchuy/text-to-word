@@ -123,11 +123,12 @@ export function parseDocument(text: string): Block[] {
       codeLanguage = trimmed.slice(3).trim();
       continue;
     }
-
     // 2. Handle Quotes
     if (trimmed.startsWith(">")) {
-      commitPendingBlocks(); // Wait, let's keep accumulating if already in quote
-      inQuote = true;
+      if (!inQuote) {
+        commitPendingBlocks();
+        inQuote = true;
+      }
       const quoteText = line.substring(line.indexOf(">") + 1).trim();
       currentQuoteLines.push(quoteText);
       // Look ahead to see if next line is also a quote. If not, we will commit it in next iterations.
