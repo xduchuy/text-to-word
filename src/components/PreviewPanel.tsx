@@ -1,5 +1,5 @@
-import React from "react";
 import type { Block } from "../utils/parser";
+import { mdToHtmlInline } from "../utils/parser";
 import { marginPresets } from "../utils/styles";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
 import { FileText } from "lucide-react";
@@ -98,9 +98,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                           style.id === "academic" ? "text-center" : "text-left"
                         } ${style.headerFontClass}`}
                         style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                      >
-                        {block.text}
-                      </h1>
+                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                      />
                     );
 
                   case "heading1":
@@ -109,9 +108,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         key={idx}
                         className={getHeadingStyle("heading1")}
                         style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                      >
-                        {block.text}
-                      </h2>
+                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                      />
                     );
 
                   case "heading2":
@@ -120,9 +118,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         key={idx}
                         className={getHeadingStyle("heading2")}
                         style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                      >
-                        {block.text}
-                      </h3>
+                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                      />
                     );
 
                   case "heading3":
@@ -131,16 +128,17 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         key={idx}
                         className={getHeadingStyle("heading3")}
                         style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                      >
-                        {block.text}
-                      </h4>
+                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                      />
                     );
 
                   case "paragraph":
                     return (
-                      <p key={idx} className={getParagraphStyle()}>
-                        {block.text}
-                      </p>
+                      <p
+                        key={idx}
+                        className={getParagraphStyle()}
+                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                      />
                     );
 
                   case "bullet-list":
@@ -150,7 +148,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         className={`list-disc pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                       >
                         {block.items.map((item, itemIdx) => (
-                          <li key={itemIdx}>{item}</li>
+                          <li
+                            key={itemIdx}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
+                          />
                         ))}
                       </ul>
                     );
@@ -162,7 +163,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         className={`list-decimal pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                       >
                         {block.items.map((item, itemIdx) => (
-                          <li key={itemIdx}>{item}</li>
+                          <li
+                            key={itemIdx}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
+                          />
                         ))}
                       </ol>
                     );
@@ -179,9 +183,11 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         }}
                       >
                         {block.text.split("\n").map((line, lIdx) => (
-                          <p key={lIdx} className="mb-1 last:mb-0">
-                            {line}
-                          </p>
+                          <p
+                            key={lIdx}
+                            className="mb-1 last:mb-0"
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(line) }}
+                          />
                         ))}
                       </div>
                     );
@@ -211,50 +217,51 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                         >
                           <thead>
                             <tr
-                              className="border-b"
-                              style={{
-                                backgroundColor: `#${style.tableHeaderBg}`,
-                                borderColor: `#${style.tableBorderColor}`,
-                              }}
-                            >
-                              {block.headers.map((header, hIdx) => (
-                                <th
-                                  key={hIdx}
-                                  className="p-3 font-semibold text-zinc-800"
-                                  style={{ color: style.tableHeaderTextColor }}
-                                >
-                                  {header}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {block.rows.map((row, rIdx) => {
-                              const isEven = rIdx % 2 === 0;
-                              const zebraBg =
-                                style.id !== "academic" && !isEven
-                                  ? `#${style.codeBgColor}`
-                                  : "transparent";
-                              return (
-                                <tr
-                                  key={rIdx}
-                                  className="border-b last:border-b-0"
-                                  style={{
-                                    backgroundColor: zebraBg,
-                                    borderColor: `#${style.tableBorderColor}`,
-                                  }}
-                                >
-                                  {row.map((cell, cIdx) => (
-                                    <td key={cIdx} className="p-3 text-zinc-600">
-                                      {cell}
-                                    </td>
-                                  ))}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                               className="border-b"
+                               style={{
+                                 backgroundColor: `#${style.tableHeaderBg}`,
+                                 borderColor: `#${style.tableBorderColor}`,
+                               }}
+                             >
+                               {block.headers.map((header, hIdx) => (
+                                 <th
+                                   key={hIdx}
+                                   className="p-3 font-semibold text-zinc-800"
+                                   style={{ color: style.tableHeaderTextColor }}
+                                   dangerouslySetInnerHTML={{ __html: mdToHtmlInline(header) }}
+                                 />
+                               ))}
+                             </tr>
+                           </thead>
+                           <tbody>
+                             {block.rows.map((row, rIdx) => {
+                               const isEven = rIdx % 2 === 0;
+                               const zebraBg =
+                                 style.id !== "academic" && !isEven
+                                   ? `#${style.codeBgColor}`
+                                   : "transparent";
+                               return (
+                                 <tr
+                                   key={rIdx}
+                                   className="border-b last:border-b-0"
+                                   style={{
+                                     backgroundColor: zebraBg,
+                                     borderColor: `#${style.tableBorderColor}`,
+                                   }}
+                                 >
+                                   {row.map((cell, cIdx) => (
+                                     <td
+                                       key={cIdx}
+                                       className="p-3 text-zinc-600"
+                                       dangerouslySetInnerHTML={{ __html: mdToHtmlInline(cell) }}
+                                     />
+                                   ))}
+                                 </tr>
+                               );
+                             })}
+                           </tbody>
+                         </table>
+                       </div>
                     );
 
                   default:

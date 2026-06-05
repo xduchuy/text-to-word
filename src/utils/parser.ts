@@ -305,3 +305,34 @@ export function blocksToMarkdown(blocks: Block[]): string {
     })
     .join("\n\n");
 }
+
+export function mdToHtmlInline(text: string): string {
+  if (!text) return "";
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  html = html.replace(/&lt;u&gt;([\s\S]*?)&lt;\/u&gt;/gi, "<u>$1</u>");
+  html = html.replace(/\*\*([\s\S]*?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__([\s\S]*?)__/g, "<strong>$1</strong>");
+  html = html.replace(/\*([\s\S]*?)\*/g, "<em>$1</em>");
+  html = html.replace(/_([\s\S]*?)_/g, "<em>$1</em>");
+  return html;
+}
+
+export function htmlToMdInline(html: string): string {
+  let text = html;
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/<\/p>/gi, "\n");
+  text = text.replace(/<p[^>]*>/gi, "");
+  text = text.replace(/<(strong|b)>([\s\S]*?)<\/\1>/gi, "**$2**");
+  text = text.replace(/<(em|i)>([\s\S]*?)<\/\1>/gi, "*$2*");
+  text = text.replace(/<u>([\s\S]*?)<\/u>/gi, "<u>$2</u>");
+  text = text.replace(/<[^>]+>/g, "");
+  if (typeof document !== "undefined") {
+    const tempDoc = document.createElement("div");
+    tempDoc.innerHTML = text;
+    return tempDoc.textContent || tempDoc.innerText || text;
+  }
+  return text;
+}

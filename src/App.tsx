@@ -220,6 +220,8 @@ function App() {
           settings={settings}
           onDownload={handleDownloadDocx}
           onChange={setText}
+          onStyleChange={setSelectedStyle}
+          onSettingsChange={setSettings}
         />
       )}
     </div>

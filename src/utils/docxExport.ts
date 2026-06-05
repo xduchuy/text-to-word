@@ -21,6 +21,70 @@ import type { Block } from "./parser";
 import { marginPresets, pageDimensions } from "./styles";
 import type { DocumentStyle, PageSettings } from "./styles";
 
+interface InlineSegment {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+}
+
+function parseInlineMarkdown(text: string): InlineSegment[] {
+  const segments: InlineSegment[] = [];
+  let index = 0;
+  
+  while (index < text.length) {
+    const sub = text.substring(index);
+    
+    // Underline
+    const uMatch = sub.match(/^<u>([\s\S]*?)<\/u>/i);
+    if (uMatch) {
+      segments.push({
+        text: uMatch[1],
+        underline: true,
+      });
+      index += uMatch[0].length;
+      continue;
+    }
+    
+    // Bold
+    const bMatch = sub.match(/^(\*\*|__)([\s\S]*?)\1/);
+    if (bMatch) {
+      segments.push({
+        text: bMatch[2],
+        bold: true,
+      });
+      index += bMatch[0].length;
+      continue;
+    }
+    
+    // Italic
+    const iMatch = sub.match(/^(\*|_)([\s\S]*?)\1/);
+    if (iMatch) {
+      segments.push({
+        text: iMatch[2],
+        italic: true,
+      });
+      index += iMatch[0].length;
+      continue;
+    }
+    
+    // Plain text
+    const nextMarkerIdx = sub.search(/\*\*|__|__|\*|_|<u>/);
+    if (nextMarkerIdx === -1) {
+      segments.push({ text: sub });
+      break;
+    } else if (nextMarkerIdx === 0) {
+      segments.push({ text: sub.charAt(0) });
+      index += 1;
+    } else {
+      segments.push({ text: sub.substring(0, nextMarkerIdx) });
+      index += nextMarkerIdx;
+    }
+  }
+  
+  return segments;
+}
+
 /**
  * Transforms parsed document blocks into a beautiful native Word (.docx) file
  */
@@ -55,15 +119,18 @@ export async function exportToDocx(
               before: isFirst ? 0 : 400,
               after: 300,
             },
-            children: [
-              new TextRun({
-                text: block.text,
-                font: style.docxFont,
-                size: 48, // 24pt
-                bold: true,
-                color: style.docxPrimaryColor,
-              }),
-            ],
+            children: parseInlineMarkdown(block.text).map(
+              (seg) =>
+                new TextRun({
+                  text: seg.text,
+                  font: style.docxFont,
+                  size: 48, // 24pt
+                  bold: seg.bold ?? true,
+                  italics: seg.italic,
+                  underline: seg.underline ? {} : undefined,
+                  color: style.docxPrimaryColor,
+                })
+            ),
           })
         );
         break;
@@ -76,15 +143,18 @@ export async function exportToDocx(
               before: isFirst ? 0 : 360,
               after: 120,
             },
-            children: [
-              new TextRun({
-                text: block.text,
-                font: style.docxFont,
-                size: 32, // 16pt
-                bold: true,
-                color: style.docxPrimaryColor,
-              }),
-            ],
+            children: parseInlineMarkdown(block.text).map(
+              (seg) =>
+                new TextRun({
+                  text: seg.text,
+                  font: style.docxFont,
+                  size: 32, // 16pt
+                  bold: seg.bold ?? true,
+                  italics: seg.italic,
+                  underline: seg.underline ? {} : undefined,
+                  color: style.docxPrimaryColor,
+                })
+            ),
           })
         );
         break;
@@ -97,15 +167,18 @@ export async function exportToDocx(
               before: isFirst ? 0 : 280,
               after: 100,
             },
-            children: [
-              new TextRun({
-                text: block.text,
-                font: style.docxFont,
-                size: 26, // 13pt
-                bold: true,
-                color: style.docxPrimaryColor,
-              }),
-            ],
+            children: parseInlineMarkdown(block.text).map(
+              (seg) =>
+                new TextRun({
+                  text: seg.text,
+                  font: style.docxFont,
+                  size: 26, // 13pt
+                  bold: seg.bold ?? true,
+                  italics: seg.italic,
+                  underline: seg.underline ? {} : undefined,
+                  color: style.docxPrimaryColor,
+                })
+            ),
           })
         );
         break;
@@ -118,15 +191,18 @@ export async function exportToDocx(
               before: isFirst ? 0 : 220,
               after: 80,
             },
-            children: [
-              new TextRun({
-                text: block.text,
-                font: style.docxFont,
-                size: 22, // 11pt
-                bold: true,
-                color: style.docxPrimaryColor,
-              }),
-            ],
+            children: parseInlineMarkdown(block.text).map(
+              (seg) =>
+                new TextRun({
+                  text: seg.text,
+                  font: style.docxFont,
+                  size: 22, // 11pt
+                  bold: seg.bold ?? true,
+                  italics: seg.italic,
+                  underline: seg.underline ? {} : undefined,
+                  color: style.docxPrimaryColor,
+                })
+            ),
           })
         );
         break;
@@ -140,14 +216,18 @@ export async function exportToDocx(
               after: style.docxParaSpacingAfter,
               line: style.docxLineSpacing,
             },
-            children: [
-              new TextRun({
-                text: block.text,
-                font: style.docxFont,
-                size: 22, // 11pt
-                color: style.docxTextColor,
-              }),
-            ],
+            children: parseInlineMarkdown(block.text).map(
+              (seg) =>
+                new TextRun({
+                  text: seg.text,
+                  font: style.docxFont,
+                  size: 22, // 11pt
+                  bold: seg.bold,
+                  italics: seg.italic,
+                  underline: seg.underline ? {} : undefined,
+                  color: style.docxTextColor,
+                })
+            ),
           })
         );
         break;
@@ -165,14 +245,18 @@ export async function exportToDocx(
                 after: 40,
                 line: style.docxLineSpacing,
               },
-              children: [
-                new TextRun({
-                  text: item,
-                  font: style.docxFont,
-                  size: 22, // 11pt
-                  color: style.docxTextColor,
-                }),
-              ],
+              children: parseInlineMarkdown(item).map(
+                (seg) =>
+                  new TextRun({
+                    text: seg.text,
+                    font: style.docxFont,
+                    size: 22, // 11pt
+                    bold: seg.bold,
+                    italics: seg.italic,
+                    underline: seg.underline ? {} : undefined,
+                    color: style.docxTextColor,
+                  })
+              ),
             })
           );
         });
@@ -191,14 +275,18 @@ export async function exportToDocx(
                 after: 40,
                 line: style.docxLineSpacing,
               },
-              children: [
-                new TextRun({
-                  text: item,
-                  font: style.docxFont,
-                  size: 22, // 11pt
-                  color: style.docxTextColor,
-                }),
-              ],
+              children: parseInlineMarkdown(item).map(
+                (seg) =>
+                  new TextRun({
+                    text: seg.text,
+                    font: style.docxFont,
+                    size: 22, // 11pt
+                    bold: seg.bold,
+                    italics: seg.italic,
+                    underline: seg.underline ? {} : undefined,
+                    color: style.docxTextColor,
+                  })
+              ),
             })
           );
         });
@@ -237,15 +325,18 @@ export async function exportToDocx(
                       (line) =>
                         new Paragraph({
                           spacing: { before: 40, after: 40 },
-                          children: [
-                            new TextRun({
-                              text: line,
-                              font: style.docxFont,
-                              size: 22, // 11pt
-                              italics: true,
-                              color: style.docxTextColor,
-                            }),
-                          ],
+                          children: parseInlineMarkdown(line).map(
+                            (seg) =>
+                              new TextRun({
+                                text: seg.text,
+                                font: style.docxFont,
+                                size: 22, // 11pt
+                                italics: seg.italic ?? true, // Quote is italicized by default
+                                bold: seg.bold,
+                                underline: seg.underline ? {} : undefined,
+                                color: style.docxTextColor,
+                              })
+                          ),
                         })
                     ),
                   }),
@@ -326,15 +417,18 @@ export async function exportToDocx(
                     children: [
                       new Paragraph({
                         alignment: AlignmentType.LEFT,
-                        children: [
-                          new TextRun({
-                            text: header,
-                            font: style.docxFont,
-                            size: 22,
-                            bold: true,
-                            color: style.tableHeaderTextColor,
-                          }),
-                        ],
+                        children: parseInlineMarkdown(header).map(
+                          (seg) =>
+                            new TextRun({
+                              text: seg.text,
+                              font: style.docxFont,
+                              size: 22,
+                              bold: seg.bold ?? true,
+                              italics: seg.italic,
+                              underline: seg.underline ? {} : undefined,
+                              color: style.tableHeaderTextColor,
+                            })
+                        ),
                       }),
                     ],
                   });
@@ -360,14 +454,18 @@ export async function exportToDocx(
                       margins: { top: 100, bottom: 100, left: 120, right: 120 },
                       children: [
                         new Paragraph({
-                          children: [
-                            new TextRun({
-                              text: cellText,
-                              font: style.docxFont,
-                              size: 22,
-                              color: style.docxTextColor,
-                            }),
-                          ],
+                          children: parseInlineMarkdown(cellText).map(
+                            (seg) =>
+                              new TextRun({
+                                text: seg.text,
+                                font: style.docxFont,
+                                size: 22,
+                                bold: seg.bold,
+                                italics: seg.italic,
+                                underline: seg.underline ? {} : undefined,
+                                color: style.docxTextColor,
+                              })
+                          ),
                         }),
                       ],
                     });

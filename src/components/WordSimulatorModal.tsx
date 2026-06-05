@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import type { Block } from "../utils/parser";
-import { blocksToMarkdown } from "../utils/parser";
+import { blocksToMarkdown, mdToHtmlInline, htmlToMdInline } from "../utils/parser";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
 import { marginPresets } from "../utils/styles";
 import {
   X, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  List, ListOrdered, Download, Search, HelpCircle, Check, ChevronDown,
+  List, ListOrdered, Download, Search, HelpCircle, Check,
   Globe, Share2, Undo2, Redo2, Type, RefreshCw
 } from "lucide-react";
 import { playClickSound } from "../utils/sound";
@@ -18,6 +18,8 @@ interface WordSimulatorModalProps {
   settings: PageSettings;
   onDownload: () => void;
   onChange: (val: string) => void;
+  onStyleChange: (style: DocumentStyle) => void;
+  onSettingsChange: (settings: PageSettings) => void;
 }
 
 export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
@@ -28,6 +30,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   settings,
   onDownload,
   onChange,
+  onStyleChange,
+  onSettingsChange,
 }) => {
   const [activeTab, setActiveTab] = useState<"home" | "insert" | "layout" | "view">("home");
   const [zoom, setZoom] = useState<number>(100);
@@ -115,6 +119,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
   const handleDownloadClick = () => {
     playClickSound();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setIsDownloading(true);
     setTimeout(() => {
       onDownload();
@@ -174,6 +181,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
             <button
               onClick={() => {
                 playClickSound();
+                if (document.activeElement instanceof HTMLElement) {
+                  document.activeElement.blur();
+                }
                 onClose();
               }}
               className="p-1.5 rounded-md hover:bg-red-500 hover:text-white transition-colors cursor-pointer text-white/80"
@@ -251,30 +261,107 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
             {/* Tab-specific controls rendering */}
             {activeTab === "home" && (
               <>
-                {/* Font Name & Size */}
-                <div className="flex items-center gap-1 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] rounded px-1.5 py-0.5 text-xs font-mono">
+                {/* Font Name Selector */}
+                <div className="flex items-center gap-1 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] rounded px-1.5 py-0.5 text-xs font-mono text-zinc-800 dark:text-zinc-100">
                   <Type className="w-3 h-3 text-zinc-400" />
-                  <span className="font-bold text-zinc-800 dark:text-zinc-100 truncate max-w-[90px]">
-                    {style.docxFont}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-zinc-400" />
+                  <select
+                    value={style.docxFont}
+                    onChange={(e) => {
+                      const selectedFont = e.target.value;
+                      playClickSound();
+                      let bodyFontFamily = "sans-serif";
+                      let headerFontFamily = "sans-serif";
+                      if (selectedFont === "Calibri") {
+                        bodyFontFamily = "Calibri, Arial, sans-serif";
+                        headerFontFamily = "Calibri, Arial, sans-serif";
+                      } else if (selectedFont === "Times New Roman") {
+                        bodyFontFamily = "'Times New Roman', Times, Georgia, serif";
+                        headerFontFamily = "'Times New Roman', Times, Georgia, serif";
+                      } else if (selectedFont === "Arial") {
+                        bodyFontFamily = "Arial, sans-serif";
+                        headerFontFamily = "Arial, sans-serif";
+                      } else if (selectedFont === "Georgia") {
+                        bodyFontFamily = "Georgia, serif";
+                        headerFontFamily = "'Playfair Display', Georgia, serif";
+                      } else if (selectedFont === "Consolas") {
+                        bodyFontFamily = "'Fira Code', 'Courier New', Courier, monospace";
+                        headerFontFamily = "'Fira Code', 'Courier New', Courier, monospace";
+                      } else if (selectedFont === "Courier New") {
+                        bodyFontFamily = "'Space Mono', monospace";
+                        headerFontFamily = "Georgia, serif";
+                      }
+                      onStyleChange({
+                        ...style,
+                        docxFont: selectedFont,
+                        bodyFontFamily,
+                        headerFontFamily,
+                      });
+                    }}
+                    className="bg-transparent font-bold border-none outline-none cursor-pointer pr-1"
+                  >
+                    <option value="Calibri" className="dark:bg-[#1E1E21]">Calibri</option>
+                    <option value="Times New Roman" className="dark:bg-[#1E1E21]">Times New Roman</option>
+                    <option value="Arial" className="dark:bg-[#1E1E21]">Arial</option>
+                    <option value="Georgia" className="dark:bg-[#1E1E21]">Georgia</option>
+                    <option value="Consolas" className="dark:bg-[#1E1E21]">Consolas</option>
+                    <option value="Courier New" className="dark:bg-[#1E1E21]">Courier New</option>
+                  </select>
                 </div>
-                <div className="flex items-center gap-1 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] rounded px-1.5 py-0.5 text-xs font-mono">
-                  <span className="font-bold text-zinc-800 dark:text-zinc-100">11</span>
-                  <ChevronDown className="w-3 h-3 text-zinc-400" />
+                
+                {/* Font Size Selector */}
+                <div className="flex items-center gap-1 bg-zinc-50 dark:bg-[#1E1E21] border border-zinc-200 dark:border-[#3F3F46] rounded px-1.5 py-0.5 text-xs font-mono text-zinc-800 dark:text-zinc-100">
+                  <select
+                    defaultValue="11"
+                    onChange={(e) => {
+                      playClickSound();
+                      document.execCommand("fontSize", false, e.target.value);
+                    }}
+                    className="bg-transparent font-bold border-none outline-none cursor-pointer"
+                  >
+                    <option value="2" className="dark:bg-[#1E1E21]">10</option>
+                    <option value="3" className="dark:bg-[#1E1E21]">11</option>
+                    <option value="4" className="dark:bg-[#1E1E21]">12</option>
+                    <option value="5" className="dark:bg-[#1E1E21]">14</option>
+                    <option value="6" className="dark:bg-[#1E1E21]">18</option>
+                    <option value="7" className="dark:bg-[#1E1E21]">24</option>
+                  </select>
                 </div>
 
                 <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
 
                 {/* Bold, Italic, Underline */}
                 <div className="flex items-center gap-0.5">
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 font-black cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("bold");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 font-black cursor-pointer"
+                    title="Chữ đậm (Ctrl+B)"
+                  >
                     <Bold className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 italic cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("italic");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 italic cursor-pointer"
+                    title="Chữ nghiêng (Ctrl+I)"
+                  >
                     <Italic className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 underline cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("underline");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200 underline cursor-pointer"
+                    title="Gạch chân (Ctrl+U)"
+                  >
                     <Underline className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -283,23 +370,73 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
                 {/* Lists & Alignment */}
                 <div className="flex items-center gap-0.5">
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("insertUnorderedList");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                    title="Danh sách dấu đầu dòng"
+                  >
                     <List className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("insertOrderedList");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                    title="Danh sách số"
+                  >
                     <ListOrdered className="w-3.5 h-3.5" />
                   </button>
                   <span className="w-px h-4 bg-zinc-100 dark:bg-[#3F3F46] mx-1" />
-                  <button onClick={() => playClickSound()} className={`p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] cursor-pointer ${!style.justifyText ? "bg-zinc-100 dark:bg-[#3F3F46] text-[#185abd]" : "text-zinc-500 dark:text-zinc-300"}`}>
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      onStyleChange({ ...style, justifyText: false });
+                      document.execCommand("justifyLeft");
+                    }} 
+                    className={`p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] cursor-pointer ${!style.justifyText ? "bg-zinc-100 dark:bg-[#3F3F46] text-[#185abd]" : "text-zinc-500 dark:text-zinc-300"}`}
+                    title="Canh trái"
+                  >
                     <AlignLeft className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("justifyCenter");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                    title="Canh giữa"
+                  >
                     <AlignCenter className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer">
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      document.execCommand("justifyRight");
+                    }} 
+                    className="p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                    title="Canh phải"
+                  >
                     <AlignRight className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => playClickSound()} className={`p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] cursor-pointer ${style.justifyText ? "bg-zinc-100 dark:bg-[#3F3F46] text-[#185abd]" : "text-zinc-500 dark:text-zinc-300"}`}>
+                  <button 
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      playClickSound();
+                      onStyleChange({ ...style, justifyText: true });
+                      document.execCommand("justifyFull");
+                    }} 
+                    className={`p-1 rounded-xs hover:bg-zinc-100 dark:hover:bg-[#3F3F46] cursor-pointer ${style.justifyText ? "bg-zinc-100 dark:bg-[#3F3F46] text-[#185abd]" : "text-zinc-500 dark:text-zinc-300"}`}
+                    title="Canh đều hai bên"
+                  >
                     <AlignJustify className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -316,15 +453,55 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
               <div className="flex items-center gap-3 text-xs">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-zinc-500">Khổ giấy:</span>
-                  <span className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold uppercase">{settings.pageSize}</span>
+                  <select
+                    value={settings.pageSize}
+                    onChange={(e) => {
+                      playClickSound();
+                      onSettingsChange({
+                        ...settings,
+                        pageSize: e.target.value as "letter" | "a4",
+                      });
+                    }}
+                    className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold uppercase cursor-pointer outline-none text-zinc-800 dark:text-zinc-100"
+                  >
+                    <option value="letter">LETTER</option>
+                    <option value="a4">A4</option>
+                  </select>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-zinc-500">Hướng:</span>
-                  <span className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold">{settings.orientation === "portrait" ? "Dọc" : "Ngang"}</span>
+                  <select
+                    value={settings.orientation}
+                    onChange={(e) => {
+                      playClickSound();
+                      onSettingsChange({
+                        ...settings,
+                        orientation: e.target.value as "portrait" | "landscape",
+                      });
+                    }}
+                    className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold cursor-pointer outline-none text-zinc-800 dark:text-zinc-100"
+                  >
+                    <option value="portrait">Dọc</option>
+                    <option value="landscape">Ngang</option>
+                  </select>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-zinc-500">Lề:</span>
-                  <span className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold uppercase">{settings.margins}</span>
+                  <select
+                    value={settings.margins}
+                    onChange={(e) => {
+                      playClickSound();
+                      onSettingsChange({
+                        ...settings,
+                        margins: e.target.value as "normal" | "narrow" | "wide",
+                      });
+                    }}
+                    className="bg-zinc-100 dark:bg-[#3E3E42] px-2 py-0.5 border border-zinc-200 dark:border-[#3F3F46] font-mono rounded font-bold uppercase cursor-pointer outline-none text-zinc-800 dark:text-zinc-100"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="narrow">Narrow</option>
+                    <option value="wide">Wide</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -457,10 +634,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </h1>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "heading1":
@@ -471,10 +647,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </h2>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "heading2":
@@ -485,10 +660,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </h3>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "heading3":
@@ -499,10 +673,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </h4>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "paragraph":
@@ -514,10 +687,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             } ${style.textClass}`}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </p>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "bullet-list":
@@ -532,10 +704,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                 className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
                                 contentEditable
                                 suppressContentEditableWarning
-                                onBlur={(e) => updateListItemText(idx, itemIdx, e.currentTarget.innerText)}
-                              >
-                                {item}
-                              </li>
+                                onBlur={(e) => updateListItemText(idx, itemIdx, htmlToMdInline(e.currentTarget.innerHTML))}
+                                dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
+                              />
                             ))}
                           </ul>
                         );
@@ -552,10 +723,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                 className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
                                 contentEditable
                                 suppressContentEditableWarning
-                                onBlur={(e) => updateListItemText(idx, itemIdx, e.currentTarget.innerText)}
-                              >
-                                {item}
-                              </li>
+                                onBlur={(e) => updateListItemText(idx, itemIdx, htmlToMdInline(e.currentTarget.innerHTML))}
+                                dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
+                              />
                             ))}
                           </ol>
                         );
@@ -573,10 +743,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             }}
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockText(idx, e.currentTarget.innerText)}
-                          >
-                            {block.text}
-                          </div>
+                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
+                          />
                         );
 
                       case "code":
@@ -624,10 +793,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                       style={{ color: style.tableHeaderTextColor }}
                                       contentEditable
                                       suppressContentEditableWarning
-                                      onBlur={(e) => updateTableHeaderText(idx, hIdx, e.currentTarget.innerText)}
-                                    >
-                                      {header}
-                                    </th>
+                                      onBlur={(e) => updateTableHeaderText(idx, hIdx, htmlToMdInline(e.currentTarget.innerHTML))}
+                                      dangerouslySetInnerHTML={{ __html: mdToHtmlInline(header) }}
+                                    />
                                   ))}
                                 </tr>
                               </thead>
@@ -653,10 +821,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                           className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
                                           contentEditable
                                           suppressContentEditableWarning
-                                          onBlur={(e) => updateTableCellText(idx, rIdx, cIdx, e.currentTarget.innerText)}
-                                        >
-                                          {cell}
-                                        </td>
+                                          onBlur={(e) => updateTableCellText(idx, rIdx, cIdx, htmlToMdInline(e.currentTarget.innerHTML))}
+                                          dangerouslySetInnerHTML={{ __html: mdToHtmlInline(cell) }}
+                                        />
                                       ))}
                                     </tr>
                                   );
