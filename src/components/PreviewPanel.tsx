@@ -36,14 +36,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
   const isLandscape = settings.orientation === "landscape";
 
   return (
-    <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-black lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--ink-black)] overflow-hidden transition-all duration-300">
+    <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-border lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--shadow-color)] overflow-hidden transition-all duration-300">
       {/* Panel Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#FAF9F5] dark:bg-white border-b-2 border-ink-black">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#FAF9F5] dark:bg-white border-b-2 border-ink-border">
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-black dark:text-zinc-300">
             Xem trước tài liệu 🔍
           </span>
-          <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-black font-bold rotate-1">
+          <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-border font-bold rotate-1">
             Bản in trực quan
           </span>
         </div>
@@ -53,7 +53,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
       </div>
 
       {/* Preview Scroll Container */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-8 flex justify-center bg-[#E5E5DE] dark:bg-[#161618] bg-[radial-gradient(var(--ink-light)_1px,transparent_1px)] bg-[size:16px_16px] bg-[-8px_-8px]">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-8 flex justify-center bg-[#E5E5DE] dark:bg-[#161618] bg-[radial-gradient(var(--dot-color)_1px,transparent_1px)] bg-[size:16px_16px] bg-[-8px_-8px]">
         {blocks.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-ink-light dark:text-zinc-500 gap-3 py-16">
             <FileText className="w-12 h-12 stroke-[1.2] opacity-80" />
@@ -63,7 +63,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
           /* Simulated Page */
           <div
             style={{ fontFamily: style.bodyFontFamily }}
-            className={`shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-black transition-all duration-300 relative flex flex-col justify-between max-w-full ${
+            className={`shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-border transition-all duration-300 relative flex flex-col justify-between max-w-full ${
               style.pageBgClass
             } ${marginPreset.css} ${
               isLandscape

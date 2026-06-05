@@ -69,7 +69,7 @@ function App() {
   return (
     <div className="flex flex-col h-screen w-screen bg-bg-paper text-ink-black overflow-hidden font-sans transition-colors duration-300">
       {/* Top Navbar */}
-      <header className="h-16 shrink-0 flex items-center justify-between px-4 bg-white border-b-4 border-ink-black z-20 transition-colors">
+      <header className="h-16 shrink-0 flex items-center justify-between px-4 bg-white border-b-4 border-ink-border z-20 transition-colors">
         <div className="flex items-center gap-2 lg:hidden">
           <span className="font-heading font-black text-xs sm:text-sm bg-ink-black text-white dark:text-zinc-900 dark:bg-ink-black px-2 py-0.5 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider">
             Wordify.
@@ -81,18 +81,18 @@ function App() {
           <span className="font-heading font-black text-base bg-ink-black text-white dark:text-zinc-900 dark:bg-ink-black px-3 py-1 rounded-sm -rotate-2 shadow-[2px_2px_0px_var(--accent-red)] tracking-wider mr-3">
             Wordify.
           </span>
-          <span className="text-[10px] bg-accent-yellow text-ink-black px-2 py-0.5 rounded-xs border-2 border-ink-black font-mono font-bold uppercase tracking-wider -rotate-1">
+          <span className="text-[10px] bg-accent-yellow text-ink-black px-2 py-0.5 rounded-xs border-2 border-ink-border font-mono font-bold uppercase tracking-wider -rotate-1">
             Không gian làm việc 📝
           </span>
         </div>
 
         {/* Mobile Tab Selectors */}
-        <div className="flex lg:hidden items-center rounded-lg bg-bg-paper border-2 border-ink-black p-0.5 max-w-[320px] shadow-[2px_2px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_rgba(255,255,255,0.15)]">
+        <div className="flex lg:hidden items-center rounded-lg bg-bg-paper border-2 border-ink-border p-0.5 max-w-[320px] shadow-[2px_2px_0px_var(--shadow-color)]">
           <button
             onClick={() => setMobileTab("settings")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "settings"
-                ? "bg-accent-yellow text-ink-black border border-ink-black shadow-[1px_1px_0px_var(--ink-black)]"
+                ? "bg-accent-yellow text-ink-black border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
                 : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
             }`}
           >
@@ -103,7 +103,7 @@ function App() {
             onClick={() => setMobileTab("write")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "write"
-                ? "bg-accent-blue text-white border border-ink-black shadow-[1px_1px_0px_var(--ink-black)]"
+                ? "bg-accent-blue text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
                 : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
             }`}
           >
@@ -114,7 +114,7 @@ function App() {
             onClick={() => setMobileTab("preview")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-mono font-bold cursor-pointer transition-colors ${
               mobileTab === "preview"
-                ? "bg-accent-green text-white border border-ink-black shadow-[1px_1px_0px_var(--ink-black)]"
+                ? "bg-accent-green text-white border border-ink-border shadow-[1px_1px_0px_var(--shadow-color)]"
                 : "text-ink-light dark:text-zinc-400 hover:text-ink-black"
             }`}
           >

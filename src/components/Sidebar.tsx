@@ -42,10 +42,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full lg:w-80 flex flex-col h-full bg-[#FAF9F5] dark:bg-white border-r-0 lg:border-r-4 border-ink-black overflow-y-auto p-5 transition-colors shrink-0">
+    <aside className="w-full lg:w-80 flex flex-col h-full bg-[#FAF9F5] dark:bg-white border-r-0 lg:border-r-4 border-ink-border overflow-y-auto p-5 transition-colors shrink-0">
       {/* Brand Logo & Title */}
-      <div className="hidden lg:flex items-center gap-2.5 mb-7 pb-4 border-b-2 border-dashed border-ink-black/25">
-        <div className="w-10 h-10 border-2 border-ink-black rounded-lg bg-[#1A1A1A] dark:bg-[#121214] flex items-center justify-center shadow-[2px_2px_0px_var(--ink-black)] text-white dark:text-zinc-200">
+      <div className="hidden lg:flex items-center gap-2.5 mb-7 pb-4 border-b-2 border-dashed border-ink-border/25">
+        <div className="w-10 h-10 border-2 border-ink-border rounded-lg bg-[#1A1A1A] dark:bg-[#121214] flex items-center justify-center shadow-[2px_2px_0px_var(--shadow-color)] text-white dark:text-zinc-200">
           <Compass className="w-5 h-5 animate-spin-slow" />
         </div>
         <div>
@@ -72,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => onStyleSelect(styleItem)}
                 className={`group flex flex-col items-start p-3 border-2 text-left cursor-pointer transition-all duration-100 ${
                   isSelected
-                    ? "bg-accent-yellow/15 dark:bg-[#1D1B10] border-ink-black shadow-[3px_3px_0px_var(--ink-black)] translate-x-[-1px] translate-y-[-1px]"
-                    : "bg-white border-ink-black/40 dark:border-ink-black/30 hover:border-ink-black hover:shadow-[3px_3px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                    ? "bg-accent-yellow/15 dark:bg-[#1D1B10] border-ink-border shadow-[3px_3px_0px_var(--shadow-color)] translate-x-[-1px] translate-y-[-1px]"
+                    : "bg-white border-ink-border/40 dark:border-ink-border/30 hover:border-ink-border hover:shadow-[3px_3px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
                 }`}
               >
                 <div className="flex items-center justify-between w-full mb-1">
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Document Properties & Settings */}
-      <div className="border-t-2 border-dashed border-ink-black/25 pt-5 mt-auto">
+      <div className="border-t-2 border-dashed border-ink-border/25 pt-5 mt-auto">
         <h2 className="text-xs font-mono font-bold text-ink-black dark:text-zinc-300 tracking-wider uppercase mb-4 flex items-center gap-1.5 pl-1">
           <Settings className="w-3.5 h-3.5" />
           <span>Thiết lập trang</span>
@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               value={settings.headerText}
               onChange={(e) => updateSetting("headerText", e.target.value)}
               placeholder="Ví dụ: Đề xuất dự án, Bản thảo V1"
-              className="w-full px-3 py-2 text-ink-black dark:text-zinc-200 bg-white border-2 border-ink-black rounded-none focus:outline-hidden focus:bg-accent-yellow/5 font-mono text-xs shadow-[1px_1px_0px_var(--ink-black)] placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+              className="w-full px-3 py-2 text-ink-black dark:text-zinc-200 bg-white border-2 border-ink-border rounded-none focus:outline-hidden focus:bg-accent-yellow/5 font-mono text-xs shadow-[1px_1px_0px_var(--shadow-color)] placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             />
           </div>
 
@@ -126,7 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <label className="block text-ink-black dark:text-zinc-300 font-mono font-bold mb-1.5">
                 Khổ giấy
               </label>
-              <div className="grid grid-cols-2 border-2 border-ink-black bg-white p-0.5 shadow-[1px_1px_0px_var(--ink-black)]">
+              <div className="grid grid-cols-2 border-2 border-ink-border bg-white p-0.5 shadow-[1px_1px_0px_var(--shadow-color)]">
                 {(["letter", "a4"] as const).map((size) => (
                   <button
                     key={size}
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <label className="block text-ink-black dark:text-zinc-300 font-mono font-bold mb-1.5">
                 Chiều giấy
               </label>
-              <div className="grid grid-cols-2 border-2 border-ink-black bg-white p-0.5 shadow-[1px_1px_0px_var(--ink-black)]">
+              <div className="grid grid-cols-2 border-2 border-ink-border bg-white p-0.5 shadow-[1px_1px_0px_var(--shadow-color)]">
                 {(["portrait", "landscape"] as const).map((orient) => (
                   <button
                     key={orient}
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <label className="block text-ink-black dark:text-zinc-300 font-mono font-bold mb-1.5">
               Căn lề (Margins)
             </label>
-            <div className="grid grid-cols-3 border-2 border-ink-black bg-white p-0.5 shadow-[1px_1px_0px_var(--ink-black)]">
+            <div className="grid grid-cols-3 border-2 border-ink-border bg-white p-0.5 shadow-[1px_1px_0px_var(--shadow-color)]">
               {(["normal", "narrow", "wide"] as const).map((margin) => (
                 <button
                   key={margin}
@@ -199,21 +199,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onChange={(e) => updateSetting("includePageNumbers", e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-white border-2 border-ink-black rounded-none peer-focus:outline-hidden peer peer-checked:after:translate-x-full peer-checked:after:bg-accent-green after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-ink-black after:rounded-none after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-accent-green/20"></div>
+              <div className="w-9 h-5 bg-white border-2 border-ink-border rounded-none peer-focus:outline-hidden peer peer-checked:after:translate-x-full peer-checked:after:bg-accent-green after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-ink-black after:rounded-none after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-accent-green/20"></div>
             </label>
           </div>
         </div>
       </div>
 
       {/* Export Action Button */}
-      <div className="mt-6 pt-4 border-t-2 border-dashed border-ink-black/25">
+      <div className="mt-6 pt-4 border-t-2 border-dashed border-ink-border/25">
         <button
           onClick={handleExport}
           disabled={disabled || isExporting}
-          className={`relative w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-ink-black font-mono font-bold text-sm select-none transition-all duration-100 cursor-pointer ${
+          className={`relative w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-ink-border font-mono font-bold text-sm select-none transition-all duration-100 cursor-pointer ${
             disabled
               ? "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 border-zinc-300 dark:border-zinc-700 cursor-not-allowed shadow-none"
-              : "bg-accent-green text-white shadow-[4px_4px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_var(--ink-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+              : "bg-accent-green text-white shadow-[4px_4px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_var(--shadow-color)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
           }`}
         >
           {isExporting ? (
@@ -233,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         {/* Small tips section */}
-        <div className="flex gap-2 p-3 mt-4 border-2 border-ink-black bg-[#FEF9C3] dark:bg-[#1D1B10] text-[10px] font-mono text-ink-black dark:text-zinc-200 leading-normal shadow-[2px_2px_0px_var(--ink-black)]">
+        <div className="flex gap-2 p-3 mt-4 border-2 border-ink-border bg-[#FEF9C3] dark:bg-[#1D1B10] text-[10px] font-mono text-ink-black dark:text-zinc-200 leading-normal shadow-[2px_2px_0px_var(--shadow-color)]">
           <Info className="w-4 h-4 shrink-0 text-accent-red" />
           <p>
             Các tài liệu được xuất có định dạng chuẩn tương thích tốt với Microsoft Word, Google Docs và Apple Pages.
@@ -241,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* iOS PWA Installation Guide */}
-        <div className="mt-4 border-2 border-ink-black bg-white dark:bg-zinc-900 shadow-[2px_2px_0px_var(--ink-black)] overflow-hidden">
+        <div className="mt-4 border-2 border-ink-border bg-white shadow-[2px_2px_0px_var(--shadow-color)] overflow-hidden">
           <button
             onClick={() => setShowIosGuide(!showIosGuide)}
             className="w-full flex items-center justify-between p-2.5 text-[10px] font-mono font-bold text-ink-black dark:text-zinc-200 hover:bg-accent-yellow/10 transition-colors text-left select-none cursor-pointer"
@@ -251,7 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
           
           {showIosGuide && (
-            <div className="p-3 border-t-2 border-dashed border-ink-black/20 text-[10px] font-mono text-ink-black dark:text-zinc-300 leading-normal space-y-2 bg-bg-paper/30">
+            <div className="p-3 border-t-2 border-dashed border-ink-border/20 text-[10px] font-mono text-ink-black dark:text-zinc-300 leading-normal space-y-2 bg-bg-paper/30">
               <p>Để thêm **Wordify** vào màn hình chính iPhone:</p>
               <ol className="list-decimal pl-4 space-y-1.5 font-bold">
                 <li>Mở trang này bằng trình duyệt <strong className="text-accent-blue dark:text-blue-400">Safari</strong>.</li>

@@ -123,7 +123,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
     >
       <motion.div
         variants={itemVariants}
-        className="w-16 h-16 bg-accent-yellow border-4 border-ink-black flex items-center justify-center text-ink-black shadow-[4px_4px_0px_var(--ink-black)] mb-6 rotate-3"
+        className="w-16 h-16 bg-accent-yellow border-4 border-ink-border flex items-center justify-center text-ink-black shadow-[4px_4px_0px_var(--shadow-color)] mb-6 rotate-3"
       >
         <Sparkles className="w-8 h-8" />
       </motion.div>
@@ -145,7 +145,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
       <motion.button
         variants={itemVariants}
         onClick={() => onSelectTemplate("# Tiêu đề tài liệu\n\nNhập hoặc dán nội dung của bạn tại đây...")}
-        className="mb-8 px-6 py-3 border-2 border-ink-black bg-accent-blue text-white font-mono font-bold text-sm shadow-[4px_4px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_var(--ink-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none cursor-pointer transition-all duration-100"
+        className="mb-8 px-6 py-3 border-2 border-ink-border bg-accent-blue text-white font-mono font-bold text-sm shadow-[4px_4px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_var(--shadow-color)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none cursor-pointer transition-all duration-100"
       >
         Bắt đầu trang trống 📄
       </motion.button>
@@ -161,9 +161,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectTemplate }) => {
               <button
                 key={tpl.title}
                 onClick={() => onSelectTemplate(tpl.content)}
-                className={`flex items-start p-3.5 border-2 border-ink-black bg-white cursor-pointer shadow-[3px_3px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-100 text-left w-full group`}
+                className={`flex items-start p-3.5 border-2 border-ink-border bg-white cursor-pointer shadow-[3px_3px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-100 text-left w-full group`}
               >
-                <div className="p-2 border-2 border-ink-black bg-[#FAF9F5] dark:bg-white text-ink-black dark:text-zinc-200 mr-4 shrink-0 shadow-[1px_1px_0px_var(--ink-black)]">
+                <div className="p-2 border-2 border-ink-border bg-[#FAF9F5] dark:bg-white text-ink-black dark:text-zinc-200 mr-4 shrink-0 shadow-[1px_1px_0px_var(--shadow-color)]">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">

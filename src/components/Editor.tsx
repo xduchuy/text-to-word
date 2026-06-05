@@ -128,15 +128,15 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-black lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--ink-black)] overflow-hidden transition-all duration-300">
+    <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-border lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--shadow-color)] overflow-hidden transition-all duration-300">
       {/* Editor Header Actions */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#FAF9F5] dark:bg-white/50 border-b-2 border-ink-black">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#FAF9F5] dark:bg-white/50 border-b-2 border-ink-border">
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-black dark:text-zinc-300">
             Bản thảo 📝
           </span>
           {text.length > 0 && (
-            <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-black font-bold rotate-1">
+            <span className="text-[10px] font-mono bg-accent-yellow text-ink-black px-1.5 py-0.5 border border-ink-border font-bold rotate-1">
               Định dạng tức thời
             </span>
           )}
@@ -146,7 +146,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
           {/* Paste Button */}
           <button
             onClick={handlePaste}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-black rounded-lg bg-accent-yellow text-ink-black shadow-[2px_2px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer transition-all duration-100"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg bg-accent-yellow text-ink-black shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer transition-all duration-100"
             title="Dán từ bộ nhớ tạm"
           >
             <Clipboard className="w-3.5 h-3.5" />
@@ -158,7 +158,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
               {/* Keyboard Shortcuts Trigger */}
               <button
                 onClick={() => setShowShortcuts(!showShortcuts)}
-                className="p-1.5 border-2 border-ink-black rounded-lg shadow-[2px_2px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
+                className="p-1.5 border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
                 title="Phím tắt soạn thảo"
               >
                 <Keyboard className="w-4 h-4" />
@@ -167,7 +167,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
               {/* Copy Button */}
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-black rounded-lg shadow-[2px_2px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
               >
                 {isCopied ? (
                   <>
@@ -185,7 +185,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
               {/* Download TXT */}
               <button
                 onClick={handleDownloadTxt}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-black rounded-lg shadow-[2px_2px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black dark:text-zinc-200 cursor-pointer transition-all duration-100"
                 title="Tải tệp văn bản thô"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -199,7 +199,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
                     onChange("");
                   }
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-black rounded-lg shadow-[2px_2px_0px_var(--ink-black)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--ink-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-accent-red text-white cursor-pointer transition-all duration-100"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-accent-red text-white cursor-pointer transition-all duration-100"
                 title="Xóa màn hình soạn thảo"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -217,16 +217,16 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-[#FEF9C3]/50 dark:bg-white/30 border-b-2 border-ink-black overflow-hidden text-xs text-ink-black dark:text-zinc-300"
+            className="bg-[#FEF9C3]/50 dark:bg-white/30 border-b-2 border-ink-border overflow-hidden text-xs text-ink-black dark:text-zinc-300"
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 font-mono font-semibold">
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + 1</kbd> H1</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + 2</kbd> H2</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + 3</kbd> H3</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + Q</kbd> Quote</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + B</kbd> Bullets</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + N</kbd> Numbers</div>
-              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-black bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--ink-black)] mr-1.5">Alt + C</kbd> Code Block</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + 1</kbd> H1</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + 2</kbd> H2</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + 3</kbd> H3</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + Q</kbd> Quote</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + B</kbd> Bullets</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + N</kbd> Numbers</div>
+              <div><kbd className="px-1.5 py-0.5 border-2 border-ink-border bg-white dark:bg-zinc-950 rounded shadow-[1px_1px_0px_var(--shadow-color)] mr-1.5">Alt + C</kbd> Code Block</div>
             </div>
           </motion.div>
         )}
@@ -247,7 +247,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-accent-blue/10 border-4 border-dashed border-accent-blue rounded-b-lg z-50 flex flex-col items-center justify-center pointer-events-none"
             >
-              <div className="flex flex-col items-center bg-white p-6 border-4 border-ink-black shadow-[4px_4px_0px_var(--ink-black)] scale-105">
+              <div className="flex flex-col items-center bg-white p-6 border-4 border-ink-border shadow-[4px_4px_0px_var(--shadow-color)] scale-105">
                 <FileUp className="w-10 h-10 text-accent-blue mb-3 animate-bounce" />
                 <p className="font-mono font-bold text-ink-black dark:text-zinc-200 text-sm">
                   Thả tệp tin vào đây để nhập (.txt, .md)
@@ -278,7 +278,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange }) => {
 
       {/* Editor Footer / Info stats */}
       {text.length > 0 && (
-        <div className="flex justify-between items-center px-4 py-2.5 bg-[#FAF9F5] dark:bg-white/50 border-t-2 border-ink-black text-[11px] font-mono font-bold text-ink-black dark:text-zinc-300">
+        <div className="flex justify-between items-center px-4 py-2.5 bg-[#FAF9F5] dark:bg-white/50 border-t-2 border-ink-border text-[11px] font-mono font-bold text-ink-black dark:text-zinc-300">
           <div className="flex items-center gap-3">
             <span>{charCount} ký tự</span>
             <span className="w-1.5 h-1.5 bg-ink-black dark:bg-zinc-400" />

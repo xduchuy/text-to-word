@@ -14,6 +14,8 @@
   --color-paper-green: var(--paper-green);
   --color-paper-pink: var(--paper-pink);
   --color-white: var(--white);
+  --color-ink-border: var(--border-color);
+  --color-ink-shadow: var(--shadow-color);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
 }
@@ -29,15 +31,19 @@
   --accent-yellow: #FDE047; /* Bút dạ quang */
   --white: #FFFFFF;
   
+  --border-color: #1A1A1A;
+  --shadow-color: #1A1A1A;
+  --dot-color: rgba(26, 26, 26, 0.08);
+
   /* Typography */
   --font-heading: 'Georgia', 'Times New Roman', serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Space Mono', monospace;
 
   /* Layout */
-  --border-thick: 2px solid var(--ink-black);
-  --shadow-solid: 4px 4px 0px var(--ink-black);
-  --shadow-hover: 6px 6px 0px var(--ink-black);
+  --border-thick: 2px solid var(--border-color);
+  --shadow-solid: 4px 4px 0px var(--shadow-color);
+  --shadow-hover: 6px 6px 0px var(--shadow-color);
 
   /* Note paper colors */
   --paper-yellow: #FEF9C3;
@@ -47,19 +53,23 @@
 }
 
 .dark {
-  /* Dark Notebook Palette - Deep Charcoal & Pitch Black */
-  --bg-paper: #09090A;
+  /* Dark Notebook Palette - Deep Charcoal & Slate Gray */
+  --bg-paper: #0E0E11;
   --ink-black: #E4E4E7;
-  --ink-light: #7E7E86;
+  --ink-light: #9CA3AF;
   --accent-red: #F87171;
   --accent-green: #34D399;
   --accent-blue: #60A5FA;
   --accent-yellow: #FBBF24;
-  --white: #121214;
+  --white: #1B1B1E;
   
-  --border-thick: 2px solid var(--ink-black);
-  --shadow-solid: 4px 4px 0px var(--ink-black);
-  --shadow-hover: 6px 6px 0px var(--ink-black);
+  --border-color: #3F3F46; /* Harmonious dark-grey border instead of glowing off-white */
+  --shadow-color: #060608; /* Real deep shadow in dark mode */
+  --dot-color: rgba(228, 228, 231, 0.07);
+
+  --border-thick: 2px solid var(--border-color);
+  --shadow-solid: 4px 4px 0px var(--shadow-color);
+  --shadow-hover: 6px 6px 0px var(--shadow-color);
 
   /* Dark note paper colors - Rich Deep Notes */
   --paper-yellow: #1D1B10;
@@ -85,7 +95,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-black);
+  background: var(--border-color);
 }
 
 /* Base Body Styles */
@@ -96,7 +106,7 @@ body {
   font-family: var(--font-body);
   overflow-x: hidden;
   /* Hiệu ứng giấy kẻ chấm lưới (Dot Grid) làm hình nền */
-  background-image: radial-gradient(var(--ink-light) 1px, transparent 1px);
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: -10px -10px;
   background-color: var(--bg-paper);
@@ -128,7 +138,7 @@ body {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.875rem;
-  box-shadow: 3px 3px 0px var(--ink-black);
+  box-shadow: 3px 3px 0px var(--shadow-color);
   transition: all 0.1s ease;
   cursor: pointer;
   user-select: none;
@@ -136,19 +146,19 @@ body {
 
 .brutalist-btn:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px var(--ink-black);
+  box-shadow: 4px 4px 0px var(--shadow-color);
 }
 
 .brutalist-btn:active:not(:disabled) {
   transform: translate(3px, 3px);
-  box-shadow: 0px 0px 0px var(--ink-black);
+  box-shadow: 0px 0px 0px var(--shadow-color);
 }
 
 .brutalist-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 1px 1px 0px var(--ink-black);
+  box-shadow: 1px 1px 0px var(--shadow-color);
 }
 
 /* Brutalist Solid UI Cards */
