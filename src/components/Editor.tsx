@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Copy, Check, Download, Trash2, Keyboard, FileUp, Clipboard, FileText } from "lucide-react";
+import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
 import { playClickSound } from "../utils/sound";
@@ -121,16 +121,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
     }
   };
 
-  const handleDownloadTxt = () => {
-    playClickSound();
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "draft-document.txt";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+
 
   return (
     <div className="flex flex-col h-full bg-white border-t-0 lg:border-t-4 border-b-2 lg:border-b-4 border-x-0 lg:border-x-4 border-ink-border lg:rounded-lg shadow-none lg:shadow-[4px_4px_0px_var(--shadow-color)] overflow-hidden transition-all duration-300">
@@ -194,15 +185,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
                 )}
               </button>
 
-              {/* Download TXT */}
-              <button
-                onClick={handleDownloadTxt}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-white text-ink-black cursor-pointer transition-all duration-100"
-                title="Tải tệp văn bản thô"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Tải .TXT</span>
-              </button>
+
 
               {/* Export DOCX */}
               {onExport && (
