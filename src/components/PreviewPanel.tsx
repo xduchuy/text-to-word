@@ -77,7 +77,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
       </div>
 
       {/* Preview Scroll Container */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-8 flex justify-center bg-[#E5E5DE] dark:bg-[#161618] bg-[radial-gradient(var(--dot-color)_1px,transparent_1px)] bg-[size:16px_16px] bg-[-8px_-8px]">
+      <div className="flex-1 overflow-auto p-2 sm:p-6 md:p-8 flex justify-center bg-[#E5E5DE] dark:bg-[#161618] bg-[radial-gradient(var(--dot-color)_1px,transparent_1px)] bg-[size:16px_16px] bg-[-8px_-8px]">
         {blocks.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-ink-light gap-3 py-16">
             <FileText className="w-12 h-12 stroke-[1.2] opacity-80" />
@@ -90,7 +90,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                 key={pageIdx}
                 id={pageIdx === 0 ? "preview-sheet" : undefined}
                 style={{ fontFamily: style.bodyFontFamily }}
-                className={`word-sheet shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-border transition-all duration-300 relative flex flex-col justify-between max-w-full ${
+                className={`word-sheet shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-border transition-all duration-300 relative flex flex-col justify-between ${
                   style.pageBgClass
                 } ${marginPreset.css} ${
                   isLandscape

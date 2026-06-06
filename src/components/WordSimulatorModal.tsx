@@ -1281,7 +1281,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         lastFocusedBlockIdxRef.current = parseInt(blockIdxAttr, 10);
                       }
                     }}
-                    className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] mb-8 ${
+                    className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between origin-top shrink-0 bg-white dark:bg-[#1E1E20] mb-8 ${
                       marginPreset.css
                     } ${
                       isLandscape
