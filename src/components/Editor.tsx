@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText, Bold, Italic, Underline, Link, Image, Table, Scissors, List } from "lucide-react";
+import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText, Bold, Italic, Underline, Link, Image, Table, Scissors, List, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
 import { playClickSound } from "../utils/sound";
@@ -17,6 +17,78 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Hãy sử dụng Google Chrome hoặc Microsoft Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "vi-VN";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      const lower = transcript.toLowerCase().trim();
+
+      // Check for spoken smart formatting commands
+      if (lower === "xuống dòng" || lower === "xuống hàng") {
+        insertAtCursor("\n");
+      } else if (lower === "tiêu đề một" || lower === "tiêu đề 1") {
+        insertAtCursor("\n# ");
+      } else if (lower === "tiêu đề hai" || lower === "tiêu đề 2") {
+        insertAtCursor("\n## ");
+      } else if (lower === "tiêu đề ba" || lower === "tiêu đề 3") {
+        insertAtCursor("\n### ");
+      } else if (lower === "gạch đầu dòng") {
+        insertAtCursor("\n- ");
+      } else if (lower === "dấu chấm") {
+        insertAtCursor(". ");
+      } else if (lower === "dấu phẩy") {
+        insertAtCursor(", ");
+      } else {
+        insertAtCursor(transcript + " ");
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+  };
+
+  const toggleDictation = () => {
+    playClickSound();
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   // Calculate statistics
   const charCount = text.length;
@@ -410,6 +482,21 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
               >
                 <List className="w-3 h-3 text-accent-blue" />
                 <span>Mục lục [TOC]</span>
+              </button>
+              
+              <span className="w-px h-4 bg-zinc-300 mx-1" />
+
+              <button
+                onClick={toggleDictation}
+                className={`flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold border border-ink-border rounded text-ink-black cursor-pointer transition-all ${
+                  isListening 
+                    ? "bg-red-500 text-white animate-pulse shadow-inner border-red-600" 
+                    : "bg-[#FAF9F5] hover:bg-zinc-200"
+                }`}
+                title="Nhập văn bản bằng giọng nói (Tiếng Việt)"
+              >
+                <Mic className="w-3.5 h-3.5" />
+                <span>{isListening ? "Đang nghe..." : "Giọng nói"}</span>
               </button>
             </div>
             
