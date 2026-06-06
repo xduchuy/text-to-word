@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full lg:w-80 flex flex-col h-full bg-[#FAF9F5] border-r-0 lg:border-r-4 border-ink-border overflow-y-auto p-5 transition-colors shrink-0 print:hidden">
+    <aside className="w-full lg:w-80 flex flex-col h-full bg-[#FAF9F5] border-r-0 lg:border-r-4 border-ink-border overflow-hidden p-5 transition-colors shrink-0 print:hidden">
       {/* Brand Logo & Title */}
       <div className="hidden lg:flex items-center gap-2.5 mb-5 pb-3 border-b-2 border-dashed border-ink-border/25">
         <div className="w-10 h-10 border-2 border-ink-border rounded-lg bg-[#1A1A1A] flex items-center justify-center shadow-[2px_2px_0px_var(--shadow-color)] text-white">
@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Tab 2: Style Selector & Creator */}
         {activeTab === "styles" && (
-          <div className="space-y-5">
+          <div className="space-y-5 overflow-y-auto pr-1 flex-1 min-h-0">
             {/* Presets List */}
             <div>
               <h3 className="text-[10px] font-mono font-bold text-ink-black tracking-wider uppercase mb-2 pl-1">
@@ -397,7 +397,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Tab 3: Page Settings & Exporters */}
         {activeTab === "settings" && (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto pr-1 flex-1 min-h-0">
             <div className="space-y-3.5 text-xs">
               {/* Header Text Input */}
               <div>
