@@ -10,6 +10,93 @@ import {
 } from "lucide-react";
 import { playClickSound } from "../utils/sound";
 
+interface EditableBlockProps {
+  tagName: string;
+  className: string;
+  style?: React.CSSProperties;
+  text: string;
+  onSave: (newMd: string) => void;
+  "data-block-idx": number;
+  "data-item-idx"?: number;
+  "data-row-idx"?: number;
+  "data-cell-idx"?: number;
+  "data-is-header"?: boolean;
+  isCode?: boolean;
+}
+
+const EditableBlock: React.FC<EditableBlockProps> = ({
+  tagName,
+  className,
+  style,
+  text,
+  onSave,
+  "data-block-idx": blockIdx,
+  "data-item-idx": itemIdx,
+  "data-row-idx": rowIdx,
+  "data-cell-idx": cellIdx,
+  "data-is-header": isHeader,
+  isCode = false,
+}) => {
+  const ref = useRef<HTMLElement | null>(null);
+  const lastHtmlRef = useRef<string>("");
+
+  const html = isCode ? text : mdToHtmlInline(text);
+
+  useEffect(() => {
+    if (ref.current) {
+      if (isCode) {
+        if (ref.current.innerText !== text && lastHtmlRef.current !== text) {
+          ref.current.innerText = text;
+          lastHtmlRef.current = text;
+        }
+      } else {
+        if (ref.current.innerHTML !== html && lastHtmlRef.current !== html) {
+          ref.current.innerHTML = html;
+          lastHtmlRef.current = html;
+        }
+      }
+    }
+  }, [html, text, isCode]);
+
+  const handleBlur = () => {
+    if (ref.current) {
+      if (isCode) {
+        const currentText = ref.current.innerText;
+        if (currentText === lastHtmlRef.current) return;
+        lastHtmlRef.current = currentText;
+        onSave(currentText);
+      } else {
+        const currentHtml = ref.current.innerHTML;
+        if (currentHtml === lastHtmlRef.current) return;
+        lastHtmlRef.current = currentHtml;
+        const md = htmlToMdInline(currentHtml);
+        onSave(md);
+      }
+    }
+  };
+
+  const Tag = tagName as any;
+
+  return (
+    <Tag
+      ref={ref}
+      className={className}
+      style={style}
+      contentEditable
+      suppressContentEditableWarning
+      data-block-idx={blockIdx}
+      data-item-idx={itemIdx}
+      data-row-idx={rowIdx}
+      data-cell-idx={cellIdx}
+      data-is-header={isHeader}
+      onBlur={handleBlur}
+      dangerouslySetInnerHTML={isCode ? undefined : { __html: html }}
+    >
+      {isCode ? text : undefined}
+    </Tag>
+  );
+};
+
 interface WordSimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -785,74 +872,64 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                     switch (block.type) {
                       case "title":
                         return (
-                          <h1
-                            key={idx}
+                          <EditableBlock
+                            tagName="h1"
                             className={`text-3xl font-extrabold tracking-tight pb-3 mb-6 border-b border-zinc-200 dark:border-[#3F3F46] outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
                               style.id === "academic" ? "text-center" : "text-left"
                             } ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
                       case "heading1":
                         return (
-                          <h2
-                            key={idx}
+                          <EditableBlock
+                            tagName="h2"
                             className={`text-2xl font-bold tracking-tight mt-8 mb-3 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
                       case "heading2":
                         return (
-                          <h3
-                            key={idx}
+                          <EditableBlock
+                            tagName="h3"
                             className={`text-xl font-bold tracking-tight mt-6 mb-2.5 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
                       case "heading3":
                         return (
-                          <h4
-                            key={idx}
+                          <EditableBlock
+                            tagName="h4"
                             className={`text-lg font-semibold mt-5 mb-2 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
                             style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
                       case "paragraph":
                         return (
-                          <p 
-                            key={idx} 
+                          <EditableBlock
+                            tagName="p"
                             className={`${style.bodyFontClass} text-[14px] leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
                               style.justifyText ? "text-justify" : "text-left"
                             } ${style.textClass}`}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
@@ -863,15 +940,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             className={`list-disc pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                           >
                             {block.items.map((item, itemIdx) => (
-                              <li
+                              <EditableBlock
                                 key={itemIdx}
+                                tagName="li"
                                 className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                contentEditable
-                                suppressContentEditableWarning
+                                text={item}
+                                onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
                                 data-block-idx={idx}
                                 data-item-idx={itemIdx}
-                                onBlur={(e) => updateListItemText(idx, itemIdx, htmlToMdInline(e.currentTarget.innerHTML))}
-                                dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
                               />
                             ))}
                           </ul>
@@ -884,15 +960,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             className={`list-decimal pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
                           >
                             {block.items.map((item, itemIdx) => (
-                              <li
+                              <EditableBlock
                                 key={itemIdx}
+                                tagName="li"
                                 className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                contentEditable
-                                suppressContentEditableWarning
+                                text={item}
+                                onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
                                 data-block-idx={idx}
                                 data-item-idx={itemIdx}
-                                onBlur={(e) => updateListItemText(idx, itemIdx, htmlToMdInline(e.currentTarget.innerHTML))}
-                                dangerouslySetInnerHTML={{ __html: mdToHtmlInline(item) }}
                               />
                             ))}
                           </ol>
@@ -900,8 +975,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
                       case "quote":
                         return (
-                          <div
-                            key={idx}
+                          <EditableBlock
+                            tagName="div"
                             className="border-l-4 pl-4 py-2 my-4 italic text-[14px] leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
                             style={{
                               borderColor: `#${style.quoteBorderColor}`,
@@ -909,11 +984,9 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                               color: `#${style.docxTextColor}`,
                               whiteSpace: "pre-wrap",
                             }}
-                            contentEditable
-                            suppressContentEditableWarning
+                            text={block.text}
+                            onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
-                            onBlur={(e) => updateBlockText(idx, htmlToMdInline(e.currentTarget.innerHTML))}
-                            dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                           />
                         );
 
@@ -928,15 +1001,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                             }}
                           >
                             <pre className="text-zinc-800 dark:text-zinc-200">
-                              <code
+                              <EditableBlock
+                                tagName="code"
                                 className="outline-none block hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                contentEditable
-                                suppressContentEditableWarning
+                                text={block.code}
+                                isCode={true}
+                                onSave={(newText) => updateCodeBlockText(idx, newText)}
                                 data-block-idx={idx}
-                                onBlur={(e) => updateCodeBlockText(idx, e.currentTarget.innerText)}
-                              >
-                                {block.code}
-                              </code>
+                              />
                             </pre>
                           </div>
                         );
@@ -957,17 +1029,16 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                    }}
                                  >
                                    {block.headers.map((header, hIdx) => (
-                                     <th
+                                     <EditableBlock
                                        key={hIdx}
+                                       tagName="th"
                                        className="p-3 font-semibold text-zinc-800 dark:text-zinc-200 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
                                        style={{ color: style.tableHeaderTextColor }}
-                                       contentEditable
-                                       suppressContentEditableWarning
+                                       text={header}
+                                       onSave={(newMd) => updateTableHeaderText(idx, hIdx, newMd)}
                                        data-block-idx={idx}
                                        data-cell-idx={hIdx}
-                                       data-is-header="true"
-                                       onBlur={(e) => updateTableHeaderText(idx, hIdx, htmlToMdInline(e.currentTarget.innerHTML))}
-                                       dangerouslySetInnerHTML={{ __html: mdToHtmlInline(header) }}
+                                       data-is-header={true}
                                      />
                                    ))}
                                  </tr>
@@ -989,16 +1060,15 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                       }}
                                     >
                                       {row.map((cell, cIdx) => (
-                                        <td
+                                        <EditableBlock
                                           key={cIdx}
+                                          tagName="td"
                                           className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                          contentEditable
-                                          suppressContentEditableWarning
+                                          text={cell}
+                                          onSave={(newMd) => updateTableCellText(idx, rIdx, cIdx, newMd)}
                                           data-block-idx={idx}
                                           data-row-idx={rIdx}
                                           data-cell-idx={cIdx}
-                                          onBlur={(e) => updateTableCellText(idx, rIdx, cIdx, htmlToMdInline(e.currentTarget.innerHTML))}
-                                          dangerouslySetInnerHTML={{ __html: mdToHtmlInline(cell) }}
                                         />
                                       ))}
                                     </tr>
