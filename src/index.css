@@ -253,23 +253,3 @@ font[size="7"] { font-size: 32px !important; }   /* 24pt */
     margin: 0;
   }
 }
-
-/* Ensure proper word wrapping inside word simulator and preview sheets */
-.word-sheet * {
-  min-width: 0 !important;
-}
-
-.word-sheet p, 
-.word-sheet h1, 
-.word-sheet h2, 
-.word-sheet h3, 
-.word-sheet h4, 
-.word-sheet li, 
-.word-sheet td, 
-.word-sheet th,
-.word-sheet [contenteditable="true"] {
-  word-break: break-word !important;
-  overflow-wrap: anywhere !important;
-  word-wrap: break-word !important;
-  white-space: pre-wrap !important;
-}

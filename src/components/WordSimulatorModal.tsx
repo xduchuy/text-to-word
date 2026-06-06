@@ -1281,7 +1281,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         lastFocusedBlockIdxRef.current = parseInt(blockIdxAttr, 10);
                       }
                     }}
-                    className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between origin-top shrink-0 bg-white dark:bg-[#1E1E20] mb-8 ${
+                    className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] mb-8 ${
                       marginPreset.css
                     } ${
                       isLandscape
@@ -1302,7 +1302,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                     )}
 
                     {/* Content body */}
-                    <div className="flex-1 w-full min-w-0 text-slate-800 dark:text-zinc-200 mt-2">
+                    <div className="flex-1 w-full text-slate-800 dark:text-zinc-200 mt-2">
                       {pageBlocks.map((block) => {
                         const idx = blocks.indexOf(block);
                         switch (block.type) {
