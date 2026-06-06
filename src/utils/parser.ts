@@ -59,6 +59,27 @@ export function parseDocument(text: string): Block[] {
 
   let hasDetectedTitle = false;
 
+  let currentParagraphLines: string[] = [];
+
+  const commitParagraph = () => {
+    if (currentParagraphLines.length > 0) {
+      const pText = currentParagraphLines.join("\n");
+      if (!hasDetectedTitle && blocks.length === 0) {
+        blocks.push({
+          type: "title",
+          text: pText,
+        });
+        hasDetectedTitle = true;
+      } else {
+        blocks.push({
+          type: "paragraph",
+          text: pText,
+        });
+      }
+      currentParagraphLines = [];
+    }
+  };
+
   // Helper to commit accumulated lists, quotes, or tables before starting a new block
   const commitPendingBlocks = () => {
     if (currentListType && currentListItems.length > 0) {
@@ -122,6 +143,7 @@ export function parseDocument(text: string): Block[] {
 
     if (trimmed.startsWith("```")) {
       commitPendingBlocks();
+      commitParagraph();
       inCodeBlock = true;
       codeLanguage = trimmed.slice(3).trim();
       continue;
@@ -130,6 +152,7 @@ export function parseDocument(text: string): Block[] {
     if (trimmed.startsWith(">")) {
       if (!inQuote) {
         commitPendingBlocks();
+        commitParagraph();
         inQuote = true;
       }
       const quoteText = line.substring(line.indexOf(">") + 1).trim();
@@ -160,17 +183,15 @@ export function parseDocument(text: string): Block[] {
       } else {
         // We see a table row, but don't know if it's a table yet (needs a divider next, or we treat it as header anyway)
         commitPendingBlocks();
+        commitParagraph();
         pendingTableHeader = cells;
         // Check if next line is a table divider to confirm it's a table
         const nextLine = lines[i + 1];
         if (nextLine && isTableDivider(nextLine)) {
           // Yes, it will be a table. We keep pendingTableHeader.
         } else {
-          // Not a table, just a single line containing pipes. Parse as regular paragraph immediately.
-          blocks.push({
-            type: "paragraph",
-            text: line,
-          });
+          // Not a table, just a single line containing pipes. Accumulate in currentParagraphLines.
+          currentParagraphLines.push(line);
           pendingTableHeader = null;
         }
         continue;
@@ -188,6 +209,7 @@ export function parseDocument(text: string): Block[] {
       if (currentListType === "numbered") {
         commitPendingBlocks();
       }
+      commitParagraph();
       currentListType = "bullet";
       currentListItems.push(itemText);
       continue;
@@ -196,6 +218,7 @@ export function parseDocument(text: string): Block[] {
       if (currentListType === "bullet") {
         commitPendingBlocks();
       }
+      commitParagraph();
       currentListType = "numbered";
       currentListItems.push(itemText);
       continue;
@@ -207,6 +230,7 @@ export function parseDocument(text: string): Block[] {
     // 4.5 Handle Page Break
     if (trimmed === "---pagebreak---" || trimmed === "<!-- pagebreak -->") {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({ type: "pagebreak" });
       continue;
     }
@@ -214,6 +238,7 @@ export function parseDocument(text: string): Block[] {
     // 4.6 Handle TOC
     if (trimmed.toUpperCase() === "[TOC]") {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({ type: "toc" });
       continue;
     }
@@ -222,6 +247,7 @@ export function parseDocument(text: string): Block[] {
     const imageMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)/);
     if (imageMatch) {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({
         type: "image",
         alt: imageMatch[1].trim(),
@@ -233,6 +259,7 @@ export function parseDocument(text: string): Block[] {
     // 5. Handle Headings
     if (trimmed.startsWith("# ")) {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({
         type: "heading1",
         text: trimmed.slice(2).trim(),
@@ -242,6 +269,7 @@ export function parseDocument(text: string): Block[] {
 
     if (trimmed.startsWith("## ")) {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({
         type: "heading2",
         text: trimmed.slice(3).trim(),
@@ -251,6 +279,7 @@ export function parseDocument(text: string): Block[] {
 
     if (trimmed.startsWith("### ")) {
       commitPendingBlocks();
+      commitParagraph();
       blocks.push({
         type: "heading3",
         text: trimmed.slice(4).trim(),
@@ -261,30 +290,17 @@ export function parseDocument(text: string): Block[] {
     // 6. Empty Lines
     if (trimmed === "") {
       commitPendingBlocks();
+      commitParagraph();
       continue;
     }
 
-    // 7. Auto-detect Title or Paragraph
-    commitPendingBlocks();
-    
-    // First non-empty line of the document becomes the title automatically, unless already detected
-    if (!hasDetectedTitle && blocks.length === 0) {
-      blocks.push({
-        type: "title",
-        text: trimmed,
-      });
-      hasDetectedTitle = true;
-    } else {
-      // Regular paragraph
-      blocks.push({
-        type: "paragraph",
-        text: line,
-      });
-    }
+    // 7. Auto-detect Title or Paragraph - accumulate in paragraph lines buffer
+    currentParagraphLines.push(line);
   }
 
   // Final commits
   commitPendingBlocks();
+  commitParagraph();
 
   // If we ended while inside a code block, close it
   if (inCodeBlock && codeContent.length > 0) {
@@ -348,6 +364,7 @@ export function mdToHtmlInline(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+  html = html.replace(/\r?\n/g, "<br />");
   html = html.replace(/&lt;u&gt;([\s\S]*?)&lt;\/u&gt;/gi, "<u>$1</u>");
   html = html.replace(/&lt;font size="(\d+)"&gt;([\s\S]*?)&lt;\/font&gt;/gi, '<font size="$1">$2</font>');
   html = html.replace(/\*\*([\s\S]*?)\*\*/g, "<strong>$1</strong>");
