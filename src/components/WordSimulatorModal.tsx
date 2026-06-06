@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import type { Block } from "../utils/parser";
 import { blocksToMarkdown, mdToHtmlInline, htmlToMdInline } from "../utils/parser";
 import type { DocumentStyle, PageSettings } from "../utils/styles";
@@ -23,6 +23,7 @@ interface EditableBlockProps {
   "data-cell-idx"?: number;
   "data-is-header"?: boolean;
   isCode?: boolean;
+  id?: string;
 }
 
 const EditableBlock: React.FC<EditableBlockProps> = ({
@@ -37,6 +38,7 @@ const EditableBlock: React.FC<EditableBlockProps> = ({
   "data-cell-idx": cellIdx,
   "data-is-header": isHeader,
   isCode = false,
+  id,
 }) => {
   const ref = useRef<HTMLElement | null>(null);
   const lastHtmlRef = useRef<string>("");
@@ -81,6 +83,7 @@ const EditableBlock: React.FC<EditableBlockProps> = ({
   return (
     <Tag
       ref={ref}
+      id={id}
       className={className}
       style={style}
       contentEditable
@@ -398,6 +401,26 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
   const marginPreset = marginPresets[settings.margins];
   const isLandscape = settings.orientation === "landscape";
+
+  // Segment blocks into page lists on "pagebreak" block
+  const pages = useMemo(() => {
+    const pagesList: Block[][] = [[]];
+    blocks.forEach((block) => {
+      if (block.type === "pagebreak") {
+        pagesList.push([]);
+      } else {
+        pagesList[pagesList.length - 1].push(block);
+      }
+    });
+    return pagesList;
+  }, [blocks]);
+
+  // Compute all headings for Table of Contents outline
+  const documentHeadings = useMemo(() => {
+    return blocks.filter(
+      (b) => b.type === "heading1" || b.type === "heading2" || b.type === "heading3"
+    ) as { type: "heading1" | "heading2" | "heading3"; text: string }[];
+  }, [blocks]);
 
   // Calculate word count
   const allText = blocks.map(b => "text" in b ? b.text : "code" in b ? b.code : "").join(" ");
@@ -1047,276 +1070,371 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
             {/* Document sheet view */}
             <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start">
-              
-              <div 
-                id="simulator-sheet"
-                style={{ 
-                  transform: `scale(${zoom / 100})`, 
-                  transformOrigin: "top center",
-                  fontFamily: style.bodyFontFamily
-                }}
-                onMouseUp={saveSelection}
-                onKeyUp={saveSelection}
-                onFocusCapture={(e) => {
-                  const target = e.target as HTMLElement;
-                  const blockIdxAttr = target.getAttribute("data-block-idx");
-                  if (blockIdxAttr !== null) {
-                    lastFocusedBlockIdxRef.current = parseInt(blockIdxAttr, 10);
-                  }
-                }}
-                className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] ${
-                  marginPreset.css
-                } ${
-                  isLandscape
-                    ? settings.pageSize === "letter"
-                      ? "w-[11in] min-h-[8.5in]"
-                      : "w-[11.69in] min-h-[8.27in]"
-                    : settings.pageSize === "letter"
-                      ? "w-[8.5in] min-h-[11in]"
-                      : "w-[8.27in] min-h-[11.69in]"
-                }`}
-              >
-                {/* Header simulation */}
-                {settings.headerText.trim() && (
-                  <div className="absolute top-4 left-6 right-6 flex justify-between items-center border-b border-zinc-200 dark:border-[#3F3F46] pb-1 text-[9px] font-sans text-zinc-400 uppercase tracking-widest">
-                    <span>Microsoft Word Simulator</span>
-                    <span>{settings.headerText}</span>
+              <div className="flex flex-col gap-8 w-full items-center">
+                {pages.map((pageBlocks, pageIdx) => (
+                  <div 
+                    key={pageIdx}
+                    id={pageIdx === 0 ? "simulator-sheet" : undefined}
+                    style={{ 
+                      transform: `scale(${zoom / 100})`, 
+                      transformOrigin: "top center",
+                      fontFamily: style.bodyFontFamily
+                    }}
+                    onMouseUp={saveSelection}
+                    onKeyUp={saveSelection}
+                    onFocusCapture={(e) => {
+                      const target = e.target as HTMLElement;
+                      const blockIdxAttr = target.getAttribute("data-block-idx");
+                      if (blockIdxAttr !== null) {
+                        lastFocusedBlockIdxRef.current = parseInt(blockIdxAttr, 10);
+                      }
+                    }}
+                    className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] mb-8 ${
+                      marginPreset.css
+                    } ${
+                      isLandscape
+                        ? settings.pageSize === "letter"
+                          ? "w-[11in] min-h-[8.5in]"
+                          : "w-[11.69in] min-h-[8.27in]"
+                        : settings.pageSize === "letter"
+                          ? "w-[8.5in] min-h-[11in]"
+                          : "w-[8.27in] min-h-[11.69in]"
+                    }`}
+                  >
+                    {/* Header simulation */}
+                    {settings.headerText.trim() && (
+                      <div className="absolute top-4 left-6 right-6 flex justify-between items-center border-b border-zinc-200 dark:border-[#3F3F46] pb-1 text-[9px] font-sans text-zinc-400 uppercase tracking-widest">
+                        <span>Microsoft Word Simulator</span>
+                        <span>{settings.headerText}</span>
+                      </div>
+                    )}
+
+                    {/* Content body */}
+                    <div className="flex-1 w-full text-slate-800 dark:text-zinc-200 mt-2">
+                      {pageBlocks.map((block) => {
+                        const idx = blocks.indexOf(block);
+                        switch (block.type) {
+                          case "title":
+                            return (
+                              <EditableBlock
+                                tagName="h1"
+                                id={`heading-${block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                                className={`text-3xl font-extrabold tracking-tight pb-3 mb-6 border-b border-zinc-200 dark:border-[#3F3F46] outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
+                                  style.id === "academic" ? "text-center" : "text-left"
+                                } ${style.headerFontClass}`}
+                                style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "heading1":
+                            return (
+                              <EditableBlock
+                                tagName="h2"
+                                id={`heading-${block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                                className={`text-2xl font-bold tracking-tight mt-8 mb-3 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
+                                style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "heading2":
+                            return (
+                              <EditableBlock
+                                tagName="h3"
+                                id={`heading-${block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                                className={`text-xl font-bold tracking-tight mt-6 mb-2.5 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
+                                style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "heading3":
+                            return (
+                              <EditableBlock
+                                tagName="h4"
+                                id={`heading-${block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                                className={`text-lg font-semibold mt-5 mb-2 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
+                                style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "paragraph":
+                            return (
+                              <EditableBlock
+                                tagName="p"
+                                className={`${style.bodyFontClass} leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
+                                  style.justifyText ? "text-justify" : "text-left"
+                                } ${style.textClass}`}
+                                style={{ fontSize: `${style.docxFontSize / 2}pt` }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "bullet-list":
+                            return (
+                              <ul
+                                key={idx}
+                                className={`list-disc pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                                style={{ fontSize: `${style.docxFontSize / 2}pt` }}
+                              >
+                                {block.items.map((item, itemIdx) => (
+                                  <EditableBlock
+                                    key={itemIdx}
+                                    tagName="li"
+                                    className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                    text={item}
+                                    onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
+                                    data-block-idx={idx}
+                                    data-item-idx={itemIdx}
+                                  />
+                                ))}
+                              </ul>
+                            );
+
+                          case "numbered-list":
+                            return (
+                              <ol
+                                key={idx}
+                                className={`list-decimal pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                                style={{ fontSize: `${style.docxFontSize / 2}pt` }}
+                              >
+                                {block.items.map((item, itemIdx) => (
+                                  <EditableBlock
+                                    key={itemIdx}
+                                    tagName="li"
+                                    className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                    text={item}
+                                    onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
+                                    data-block-idx={idx}
+                                    data-item-idx={itemIdx}
+                                  />
+                                ))}
+                              </ol>
+                            );
+
+                          case "quote":
+                            return (
+                              <EditableBlock
+                                tagName="div"
+                                className="border-l-4 pl-4 py-2 my-4 italic leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
+                                style={{
+                                  borderColor: `#${style.quoteBorderColor}`,
+                                  backgroundColor: style.quoteBgColor ? `#${style.quoteBgColor}` : "transparent",
+                                  color: `#${style.docxTextColor}`,
+                                  whiteSpace: "pre-wrap",
+                                  fontSize: `${style.docxFontSize / 2}pt`
+                                }}
+                                text={block.text}
+                                onSave={(newMd) => updateBlockText(idx, newMd)}
+                                data-block-idx={idx}
+                              />
+                            );
+
+                          case "code":
+                            return (
+                              <div
+                                key={idx}
+                                className="p-4 my-4 font-mono text-xs rounded border overflow-x-auto leading-relaxed shadow-xs"
+                                style={{
+                                  backgroundColor: `#${style.codeBgColor}`,
+                                  borderColor: `#${style.codeBorderColor}`,
+                                }}
+                              >
+                                <pre className="text-zinc-800 dark:text-zinc-200">
+                                  <EditableBlock
+                                    tagName="code"
+                                    className="outline-none block hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                    text={block.code}
+                                    isCode={true}
+                                    onSave={(newText) => updateCodeBlockText(idx, newText)}
+                                    data-block-idx={idx}
+                                  />
+                                </pre>
+                              </div>
+                            );
+
+                          case "table":
+                            return (
+                              <div key={idx} className="overflow-x-auto my-6 border rounded border-zinc-200 dark:border-[#3F3F46]">
+                                <table
+                                  className="w-full text-left text-xs border-collapse font-sans"
+                                  style={{ borderColor: `#${style.tableBorderColor}` }}
+                                >
+                                  <thead>
+                                     <tr
+                                       className="border-b dark:border-[#3F3F46]"
+                                       style={{
+                                         backgroundColor: `#${style.tableHeaderBg}`,
+                                         borderColor: `#${style.tableBorderColor}`,
+                                       }}
+                                     >
+                                       {block.headers.map((header, hIdx) => (
+                                         <EditableBlock
+                                           key={hIdx}
+                                           tagName="th"
+                                           className="p-3 font-semibold text-zinc-800 dark:text-zinc-200 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                           style={{ color: style.tableHeaderTextColor }}
+                                           text={header}
+                                           onSave={(newMd) => updateTableHeaderText(idx, hIdx, newMd)}
+                                           data-block-idx={idx}
+                                           data-cell-idx={hIdx}
+                                           data-is-header={true}
+                                         />
+                                       ))}
+                                     </tr>
+                                  </thead>
+                                  <tbody>
+                                    {block.rows.map((row, rIdx) => {
+                                      const isEven = rIdx % 2 === 0;
+                                      const zebraBg =
+                                        style.id !== "academic" && !isEven
+                                          ? `#${style.codeBgColor}`
+                                          : "transparent";
+                                      return (
+                                        <tr
+                                          key={rIdx}
+                                          className="border-b last:border-b-0 dark:border-[#3F3F46]"
+                                          style={{
+                                            backgroundColor: zebraBg,
+                                            borderColor: `#${style.tableBorderColor}`,
+                                          }}
+                                        >
+                                          {row.map((cell, cIdx) => (
+                                            <EditableBlock
+                                              key={cIdx}
+                                              tagName="td"
+                                              className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                              style={{ fontSize: `${style.docxFontSize / 2}pt` }}
+                                              text={cell}
+                                              onSave={(newMd) => updateTableCellText(idx, rIdx, cIdx, newMd)}
+                                              data-block-idx={idx}
+                                              data-row-idx={rIdx}
+                                              data-cell-idx={cIdx}
+                                            />
+                                          ))}
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            );
+
+                          case "image":
+                            return (
+                              <div key={idx} className="my-6 text-center bg-zinc-50 dark:bg-zinc-800/30 p-3 rounded-lg border border-dashed border-zinc-300 dark:border-[#3F3F46]">
+                                <img
+                                  src={block.url}
+                                  alt={block.alt}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src =
+                                      "https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=500&auto=format&fit=crop";
+                                  }}
+                                  className="max-w-full max-h-[200px] object-contain rounded border border-ink-border dark:border-[#3F3F46] mx-auto block mb-2"
+                                />
+                                <div className="flex gap-2 justify-center max-w-md mx-auto mt-2">
+                                  <input
+                                    type="text"
+                                    value={block.alt}
+                                    placeholder="Chú thích ảnh..."
+                                    onChange={(e) => {
+                                      const updated = blocks.map((b, bIdx) =>
+                                        bIdx === idx && b.type === "image" ? { ...b, alt: e.target.value } : b
+                                      );
+                                      updateBlocksState(updated);
+                                    }}
+                                    className="px-2 py-1 text-xs border border-zinc-300 dark:border-[#3F3F46] bg-white dark:bg-[#1E1E21] text-zinc-800 dark:text-zinc-100 rounded focus:outline-hidden flex-1"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={block.url}
+                                    placeholder="URL ảnh..."
+                                    onChange={(e) => {
+                                      const updated = blocks.map((b, bIdx) =>
+                                        bIdx === idx && b.type === "image" ? { ...b, url: e.target.value } : b
+                                      );
+                                      updateBlocksState(updated);
+                                    }}
+                                    className="px-2 py-1 text-xs border border-zinc-300 dark:border-[#3F3F46] bg-white dark:bg-[#1E1E21] text-zinc-800 dark:text-zinc-100 rounded focus:outline-hidden flex-1 font-mono text-[10px]"
+                                  />
+                                </div>
+                              </div>
+                            );
+
+                          case "toc":
+                            return (
+                              <div
+                                key={idx}
+                                className="my-6 p-5 border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/20 rounded font-sans select-none"
+                                style={{ fontSize: `${style.docxFontSize / 2}pt` }}
+                              >
+                                <h3 className="font-bold text-center mb-4 text-zinc-800 dark:text-zinc-100 font-heading">
+                                  MỤC LỤC TÀI LIỆU
+                                </h3>
+                                {documentHeadings.length === 0 ? (
+                                  <p className="text-xs text-zinc-400 italic text-center">
+                                    (Không có tiêu đề nào để hiển thị trong mục lục. Thêm tiêu đề #, ##, ### để cập nhật)
+                                  </p>
+                                ) : (
+                                  <div className="space-y-2.5">
+                                    {documentHeadings.map((heading, hIdx) => {
+                                      const indentClass =
+                                        heading.type === "heading2"
+                                          ? "pl-4"
+                                          : heading.type === "heading3"
+                                          ? "pl-8"
+                                          : "font-bold";
+                                      const textId = heading.text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                                      return (
+                                        <div
+                                          key={hIdx}
+                                          onClick={() => {
+                                            const el = document.getElementById(`heading-${textId}`);
+                                            if (el) {
+                                              el.scrollIntoView({ behavior: "smooth", block: "center" });
+                                            }
+                                          }}
+                                          className={`flex items-center justify-between text-zinc-700 dark:text-zinc-300 hover:text-accent-blue cursor-pointer transition-colors group ${indentClass}`}
+                                        >
+                                          <span className="truncate group-hover:underline">{heading.text}</span>
+                                          <span className="flex-1 border-b border-dotted border-zinc-300 dark:border-[#3F3F46] mx-2 h-3" />
+                                          <span className="text-xs font-mono select-none">Trang 1</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+
+                          default:
+                            return null;
+                        }
+                      })}
+                    </div>
+
+                    {/* Footer simulation */}
+                    {settings.includePageNumbers && (
+                      <div className="border-t border-zinc-200 dark:border-[#3F3F46] mt-8 pt-2 flex justify-between items-center text-[9px] font-sans text-zinc-400 tracking-wider">
+                        <span>Wordify - Công cụ xuất bản</span>
+                        <span>Trang {pageIdx + 1} trên {pages.length}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* Content body */}
-                <div className="flex-1 w-full text-slate-800 dark:text-zinc-200 mt-2">
-                  {blocks.map((block, idx) => {
-                    switch (block.type) {
-                      case "title":
-                        return (
-                          <EditableBlock
-                            tagName="h1"
-                            className={`text-3xl font-extrabold tracking-tight pb-3 mb-6 border-b border-zinc-200 dark:border-[#3F3F46] outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
-                              style.id === "academic" ? "text-center" : "text-left"
-                            } ${style.headerFontClass}`}
-                            style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "heading1":
-                        return (
-                          <EditableBlock
-                            tagName="h2"
-                            className={`text-2xl font-bold tracking-tight mt-8 mb-3 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
-                            style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "heading2":
-                        return (
-                          <EditableBlock
-                            tagName="h3"
-                            className={`text-xl font-bold tracking-tight mt-6 mb-2.5 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
-                            style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "heading3":
-                        return (
-                          <EditableBlock
-                            tagName="h4"
-                            className={`text-lg font-semibold mt-5 mb-2 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${style.headerFontClass}`}
-                            style={{ color: `#${style.docxPrimaryColor}`, fontFamily: style.headerFontFamily }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "paragraph":
-                        return (
-                          <EditableBlock
-                            tagName="p"
-                            className={`${style.bodyFontClass} leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
-                              style.justifyText ? "text-justify" : "text-left"
-                            } ${style.textClass}`}
-                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "bullet-list":
-                        return (
-                          <ul
-                            key={idx}
-                            className={`list-disc pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
-                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
-                          >
-                            {block.items.map((item, itemIdx) => (
-                              <EditableBlock
-                                key={itemIdx}
-                                tagName="li"
-                                className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                text={item}
-                                onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
-                                data-block-idx={idx}
-                                data-item-idx={itemIdx}
-                              />
-                            ))}
-                          </ul>
-                        );
-
-                      case "numbered-list":
-                        return (
-                          <ol
-                            key={idx}
-                            className={`list-decimal pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
-                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
-                          >
-                            {block.items.map((item, itemIdx) => (
-                              <EditableBlock
-                                key={itemIdx}
-                                tagName="li"
-                                className="outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-0.5 -m-0.5 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                text={item}
-                                onSave={(newMd) => updateListItemText(idx, itemIdx, newMd)}
-                                data-block-idx={idx}
-                                data-item-idx={itemIdx}
-                              />
-                            ))}
-                          </ol>
-                        );
-
-                      case "quote":
-                        return (
-                          <EditableBlock
-                            tagName="div"
-                            className="border-l-4 pl-4 py-2 my-4 italic leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
-                            style={{
-                              borderColor: `#${style.quoteBorderColor}`,
-                              backgroundColor: style.quoteBgColor ? `#${style.quoteBgColor}` : "transparent",
-                              color: `#${style.docxTextColor}`,
-                              whiteSpace: "pre-wrap",
-                              fontSize: `${style.docxFontSize / 2}pt`
-                            }}
-                            text={block.text}
-                            onSave={(newMd) => updateBlockText(idx, newMd)}
-                            data-block-idx={idx}
-                          />
-                        );
-
-                      case "code":
-                        return (
-                          <div
-                            key={idx}
-                            className="p-4 my-4 font-mono text-xs rounded border overflow-x-auto leading-relaxed shadow-xs"
-                            style={{
-                              backgroundColor: `#${style.codeBgColor}`,
-                              borderColor: `#${style.codeBorderColor}`,
-                            }}
-                          >
-                            <pre className="text-zinc-800 dark:text-zinc-200">
-                              <EditableBlock
-                                tagName="code"
-                                className="outline-none block hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                text={block.code}
-                                isCode={true}
-                                onSave={(newText) => updateCodeBlockText(idx, newText)}
-                                data-block-idx={idx}
-                              />
-                            </pre>
-                          </div>
-                        );
-
-                      case "table":
-                        return (
-                          <div key={idx} className="overflow-x-auto my-6 border rounded border-zinc-200 dark:border-[#3F3F46]">
-                            <table
-                              className="w-full text-left text-xs border-collapse font-sans"
-                              style={{ borderColor: `#${style.tableBorderColor}` }}
-                            >
-                              <thead>
-                                 <tr
-                                   className="border-b dark:border-[#3F3F46]"
-                                   style={{
-                                     backgroundColor: `#${style.tableHeaderBg}`,
-                                     borderColor: `#${style.tableBorderColor}`,
-                                   }}
-                                 >
-                                   {block.headers.map((header, hIdx) => (
-                                     <EditableBlock
-                                       key={hIdx}
-                                       tagName="th"
-                                       className="p-3 font-semibold text-zinc-800 dark:text-zinc-200 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                       style={{ color: style.tableHeaderTextColor }}
-                                       text={header}
-                                       onSave={(newMd) => updateTableHeaderText(idx, hIdx, newMd)}
-                                       data-block-idx={idx}
-                                       data-cell-idx={hIdx}
-                                       data-is-header={true}
-                                     />
-                                   ))}
-                                 </tr>
-                              </thead>
-                              <tbody>
-                                {block.rows.map((row, rIdx) => {
-                                  const isEven = rIdx % 2 === 0;
-                                  const zebraBg =
-                                    style.id !== "academic" && !isEven
-                                      ? `#${style.codeBgColor}`
-                                      : "transparent";
-                                  return (
-                                    <tr
-                                      key={rIdx}
-                                      className="border-b last:border-b-0 dark:border-[#3F3F46]"
-                                      style={{
-                                        backgroundColor: zebraBg,
-                                        borderColor: `#${style.tableBorderColor}`,
-                                      }}
-                                    >
-                                      {row.map((cell, cIdx) => (
-                                        <EditableBlock
-                                          key={cIdx}
-                                          tagName="td"
-                                          className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
-                                          style={{ fontSize: `${style.docxFontSize / 2}pt` }}
-                                          text={cell}
-                                          onSave={(newMd) => updateTableCellText(idx, rIdx, cIdx, newMd)}
-                                          data-block-idx={idx}
-                                          data-row-idx={rIdx}
-                                          data-cell-idx={cIdx}
-                                        />
-                                      ))}
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        );
-
-                      default:
-                        return null;
-                    }
-                  })}
-                </div>
-
-                {/* Footer simulation */}
-                {settings.includePageNumbers && (
-                  <div className="border-t border-zinc-200 dark:border-[#3F3F46] mt-8 pt-2 flex justify-between items-center text-[9px] font-sans text-zinc-400 tracking-wider">
-                    <span>Wordify - Công cụ xuất bản</span>
-                    <span>Trang 1 trên 1</span>
-                  </div>
-                )}
+                ))}
               </div>
-
             </div>
 
             {/* Find & Replace Side Pane */}

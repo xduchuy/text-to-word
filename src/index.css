@@ -214,27 +214,29 @@ font[size="7"] { font-size: 32px !important; }   /* 24pt */
     visibility: visible !important;
   }
 
-  /* Ensure the sheet fills the printed region exactly, overrides shadows and zoom scales */
-  #preview-sheet, #simulator-sheet {
-    position: absolute !important;
+  /* Ensure all sheets fill the printed region exactly, overrides shadows and zoom scales */
+  .word-sheet {
+    position: relative !important;
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
     min-height: 100% !important;
-    margin: 0 !important;
+    margin: 0 0 2cm 0 !important;
     padding: 2.54cm !important; /* Standard 1 inch page margin */
     border: none !important;
     box-shadow: none !important;
     transform: none !important;
     background: #ffffff !important;
     color: #000000 !important;
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   /* When the simulator is open, hide the background preview panel to prevent double sheet print overlap */
-  body:has(#simulator-sheet) #preview-sheet,
-  body:has(#simulator-sheet) #preview-sheet * {
+  body:has(#simulator-sheet) .preview-panel-container,
+  body:has(#simulator-sheet) .preview-panel-container * {
     visibility: hidden !important;
     display: none !important;
   }

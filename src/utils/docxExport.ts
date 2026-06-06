@@ -15,6 +15,9 @@ import {
   WidthType,
   PageOrientation,
   LevelFormat,
+  PageBreak,
+  ImageRun,
+  TableOfContents,
 } from "docx";
 import { saveAs } from "file-saver";
 import type { Block } from "./parser";
@@ -108,6 +111,53 @@ function parseInlineMarkdown(text: string): InlineSegment[] {
   }
   
   return segments;
+}
+
+async function fetchImageBuffer(url: string): Promise<{ data: ArrayBuffer; type: "png" | "jpg" | "gif" }> {
+  if (url.startsWith("data:")) {
+    const match = url.match(/^data:(image\/[a-zA-Z+]+);base64,(.*)$/);
+    if (!match) throw new Error("Invalid data URI");
+    const mime = match[1];
+    const base64 = match[2];
+    const binaryStr = atob(base64);
+    const len = binaryStr.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    let type: "png" | "jpg" | "gif" = "png";
+    if (mime === "image/jpeg" || mime === "image/jpg") type = "jpg";
+    else if (mime === "image/gif") type = "gif";
+    return { data: bytes.buffer, type };
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+  
+  const contentType = response.headers.get("Content-Type");
+  let type: "png" | "jpg" | "gif" = "png";
+  if (contentType) {
+    if (contentType.includes("jpeg") || contentType.includes("jpg")) type = "jpg";
+    else if (contentType.includes("gif")) type = "gif";
+  } else {
+    if (url.toLowerCase().includes("jpg") || url.toLowerCase().includes("jpeg")) type = "jpg";
+    else if (url.toLowerCase().includes("gif")) type = "gif";
+  }
+  return { data: buffer, type };
+}
+
+function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      resolve({ width: 450, height: 300 });
+    };
+    img.src = url;
+  });
 }
 
 /**
@@ -501,6 +551,109 @@ export async function exportToDocx(
           })
         );
         break;
+
+      case "pagebreak":
+        children.push(
+          new Paragraph({
+            children: [new PageBreak()],
+          })
+        );
+        break;
+
+      case "toc":
+        children.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+            children: [
+              new TextRun({
+                text: "MỤC LỤC TÀI LIỆU",
+                font: style.docxFont,
+                size: 28, // 14pt
+                bold: true,
+                color: style.docxPrimaryColor,
+              }),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TableOfContents("Mục lục", {
+                hyperlink: true,
+                headingStyleRange: "1-3",
+              }),
+            ],
+          })
+        );
+        break;
+
+      case "image": {
+        try {
+          const { data, type } = await fetchImageBuffer(block.url);
+          let imgWidth = 450;
+          let imgHeight = 300;
+          try {
+            const dims = await getImageDimensions(block.url);
+            const maxW = 450;
+            if (dims.width > maxW) {
+              imgWidth = maxW;
+              imgHeight = Math.round((dims.height * maxW) / dims.width);
+            } else {
+              imgWidth = dims.width;
+              imgHeight = dims.height;
+            }
+          } catch (e) {
+            console.warn("Could not get image dimensions, using defaults", e);
+          }
+
+          children.push(
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 200, after: 200 },
+              children: [
+                new ImageRun({
+                  data,
+                  transformation: {
+                    width: imgWidth,
+                    height: imgHeight,
+                  },
+                  type,
+                }),
+              ],
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 100, after: 100 },
+              children: [
+                new TextRun({
+                  text: `Hình: ${block.alt || "Mô tả ảnh"}`,
+                  font: style.docxFont,
+                  size: 18, // 9pt
+                  italics: true,
+                  color: "94A3B8", // slate-400
+                }),
+              ],
+            })
+          );
+        } catch (error) {
+          console.error("Failed to load image for DOCX export:", error);
+          children.push(
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 200, after: 200 },
+              children: [
+                new TextRun({
+                  text: `[Hình ảnh: ${block.alt || "Mô tả ảnh"} (${block.url})]`,
+                  font: style.docxFont,
+                  size: 20, // 10pt
+                  italics: true,
+                  color: "EF4444", // warning red
+                }),
+              ],
+            })
+          );
+        }
+        break;
+      }
     }
   }
 

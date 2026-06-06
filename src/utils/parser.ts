@@ -8,7 +8,10 @@ export type Block =
   | { type: "numbered-list"; items: string[] }
   | { type: "quote"; text: string }
   | { type: "code"; code: string; language: string }
-  | { type: "table"; headers: string[]; rows: string[][] };
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "image"; alt: string; url: string }
+  | { type: "pagebreak" }
+  | { type: "toc" };
 
 /**
  * Checks if a line is a markdown table divider, e.g., |---|---| or | :--- | ---: |
@@ -201,6 +204,32 @@ export function parseDocument(text: string): Block[] {
       commitPendingBlocks();
     }
 
+    // 4.5 Handle Page Break
+    if (trimmed === "---pagebreak---" || trimmed === "<!-- pagebreak -->") {
+      commitPendingBlocks();
+      blocks.push({ type: "pagebreak" });
+      continue;
+    }
+
+    // 4.6 Handle TOC
+    if (trimmed.toUpperCase() === "[TOC]") {
+      commitPendingBlocks();
+      blocks.push({ type: "toc" });
+      continue;
+    }
+
+    // 4.7 Handle Images
+    const imageMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)/);
+    if (imageMatch) {
+      commitPendingBlocks();
+      blocks.push({
+        type: "image",
+        alt: imageMatch[1].trim(),
+        url: imageMatch[2].trim(),
+      });
+      continue;
+    }
+
     // 5. Handle Headings
     if (trimmed.startsWith("# ")) {
       commitPendingBlocks();
@@ -300,6 +329,12 @@ export function blocksToMarkdown(blocks: Block[]): string {
           const dataRows = block.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
           return `${headerRow}\n${dividerRow}\n${dataRows}`;
         }
+        case "image":
+          return `![${block.alt}](${block.url})`;
+        case "pagebreak":
+          return `---pagebreak---`;
+        case "toc":
+          return `[TOC]`;
         default:
           return "";
       }
