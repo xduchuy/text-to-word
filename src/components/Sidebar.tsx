@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { playClickSound } from "../utils/sound";
 import type { DocumentItem } from "../App";
+import { XPConfirmModal } from "./XPConfirmModal";
 
 interface SidebarProps {
   selectedStyle: DocumentStyle;
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [activeTab, setActiveTab] = useState<"docs" | "styles" | "settings">("docs");
+  const [docToDelete, setDocToDelete] = useState<{ id: string; title: string } | null>(null);
   
   // Local renaming state
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
@@ -237,9 +239,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(`Bạn chắc chắn muốn xóa tài liệu "${doc.title}"?`)) {
-                                onDeleteDoc(doc.id);
-                              }
+                              playClickSound();
+                              setDocToDelete({ id: doc.id, title: doc.title });
                             }}
                             className="p-0.5 rounded-sm hover:bg-red-100 text-zinc-500 hover:text-accent-red cursor-pointer"
                             title="Xóa tài liệu"
@@ -580,6 +581,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
       </div>
+      {docToDelete && (
+        <XPConfirmModal
+          title="Xác nhận xóa tài liệu"
+          message={`Bạn có chắc chắn muốn xóa tài liệu "${docToDelete.title}"? Hành động này sẽ xóa vĩnh viễn tài liệu khỏi không gian làm việc.`}
+          onConfirm={() => {
+            onDeleteDoc(docToDelete.id);
+            setDocToDelete(null);
+          }}
+          onCancel={() => setDocToDelete(null)}
+        />
+      )}
     </aside>
   );
 };

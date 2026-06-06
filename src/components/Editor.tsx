@@ -3,6 +3,7 @@ import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText, Bold, Itali
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
 import { playClickSound } from "../utils/sound";
+import { XPConfirmModal } from "./XPConfirmModal";
 
 interface EditorProps {
   text: string;
@@ -14,6 +15,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Calculate statistics
@@ -274,9 +276,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
               <button
                 onClick={() => {
                   playClickSound();
-                  if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ văn bản?")) {
-                    onChange("");
-                  }
+                  setShowClearConfirm(true);
                 }}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-ink-border rounded-lg shadow-[2px_2px_0px_var(--shadow-color)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_var(--shadow-color)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none bg-accent-red text-white cursor-pointer transition-all duration-100"
                 title="Xóa màn hình soạn thảo"
@@ -437,6 +437,18 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
             <span>~{readingTime} phút đọc ⏱️</span>
           </div>
         </div>
+      )}
+
+      {showClearConfirm && (
+        <XPConfirmModal
+          title="Clear Document"
+          message="Bạn có chắc chắn muốn xóa toàn bộ văn bản? Hành động này không thể hoàn tác."
+          onConfirm={() => {
+            onChange("");
+            setShowClearConfirm(false);
+          }}
+          onCancel={() => setShowClearConfirm(false)}
+        />
       )}
     </div>
   );
