@@ -20,51 +20,137 @@ const DEFAULT_SETTINGS: PageSettings = {
   headerText: "",
 };
 
+export interface DocumentItem {
+  id: string;
+  title: string;
+  text: string;
+  style: DocumentStyle;
+  settings: PageSettings;
+  updatedAt: number;
+}
+
 function App() {
-  // 1. Initial states from localStorage
-  const [text, setText] = useState<string>(() => {
-    return localStorage.getItem("composer_text") || "";
-  });
-
-  const [selectedStyle, setSelectedStyle] = useState<DocumentStyle>(() => {
-    const savedId = localStorage.getItem("composer_style_id");
-    const style = documentStyles.find((s) => s.id === savedId);
-    return style || documentStyles[1]; // Default to Minimal Modern
-  });
-
-  const [settings, setSettings] = useState<PageSettings>(() => {
+  // 1. Initial states with localStorage load & migration
+  const [documents, setDocuments] = useState<DocumentItem[]>(() => {
+    const saved = localStorage.getItem("composer_documents_v2");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error("Failed to parse documents", e);
+      }
+    }
+    
+    // Migration fallback for existing users
+    const oldText = localStorage.getItem("composer_text") || "# Tài liệu chính\n\nBắt đầu soạn thảo nội dung tại đây...";
+    const oldStyleId = localStorage.getItem("composer_style_id");
+    const oldStyle = documentStyles.find((s) => s.id === oldStyleId) || documentStyles[1];
+    let oldSettings = DEFAULT_SETTINGS;
     const savedSettings = localStorage.getItem("composer_settings");
     if (savedSettings) {
       try {
-        return JSON.parse(savedSettings);
-      } catch (e) {
-        console.error("Failed to parse settings", e);
-      }
+        oldSettings = JSON.parse(savedSettings);
+      } catch (e) {}
     }
-    return DEFAULT_SETTINGS;
+    
+    return [{
+      id: "default-doc-id",
+      title: "Tài liệu chính",
+      text: oldText,
+      style: oldStyle,
+      settings: oldSettings,
+      updatedAt: Date.now()
+    }];
+  });
+
+  const [activeDocId, setActiveDocId] = useState<string>(() => {
+    const savedActiveId = localStorage.getItem("composer_active_doc_id");
+    return savedActiveId || "default-doc-id";
   });
 
   // Mobile navigation tab state
   const [mobileTab, setMobileTab] = useState<"write" | "preview" | "settings">("write");
   const [showWordSimulator, setShowWordSimulator] = useState(false);
 
-  // 2. Parsed blocks computed from raw editor text
-  const blocks = useMemo(() => parseDocument(text), [text]);
+  // 2. Computed active document properties
+  const activeDoc = useMemo(() => {
+    const doc = documents.find((d) => d.id === activeDocId);
+    return doc || documents[0] || {
+      id: "fallback-id",
+      title: "Tài liệu trống",
+      text: "",
+      style: documentStyles[1],
+      settings: DEFAULT_SETTINGS,
+      updatedAt: Date.now()
+    };
+  }, [documents, activeDocId]);
 
-  // 3. LocalStorage sync effects
+  const blocks = useMemo(() => parseDocument(activeDoc.text), [activeDoc.text]);
+
+  // 3. Document CRUD and Update handlers
+  const updateActiveDocText = (newText: string) => {
+    setDocuments((prev) => 
+      prev.map((d) => d.id === activeDocId ? { ...d, text: newText, updatedAt: Date.now() } : d)
+    );
+  };
+
+  const updateActiveDocStyle = (newStyle: DocumentStyle) => {
+    setDocuments((prev) => 
+      prev.map((d) => d.id === activeDocId ? { ...d, style: newStyle, updatedAt: Date.now() } : d)
+    );
+  };
+
+  const updateActiveDocSettings = (newSettings: PageSettings) => {
+    setDocuments((prev) => 
+      prev.map((d) => d.id === activeDocId ? { ...d, settings: newSettings, updatedAt: Date.now() } : d)
+    );
+  };
+
+  const createNewDoc = () => {
+    playClickSound();
+    const newId = Date.now().toString();
+    const newDoc: DocumentItem = {
+      id: newId,
+      title: `Tài liệu mới ${documents.length + 1}`,
+      text: `# Tài liệu mới ${documents.length + 1}\n\nBắt đầu soạn thảo nội dung tại đây...`,
+      style: documentStyles[1],
+      settings: DEFAULT_SETTINGS,
+      updatedAt: Date.now()
+    };
+    setDocuments((prev) => [...prev, newDoc]);
+    setActiveDocId(newId);
+  };
+
+  const deleteDoc = (id: string) => {
+    playClickSound();
+    if (documents.length <= 1) {
+      alert("Bạn phải giữ lại ít nhất một tài liệu!");
+      return;
+    }
+    const filtered = documents.filter((d) => d.id !== id);
+    setDocuments(filtered);
+    if (activeDocId === id) {
+      setActiveDocId(filtered[0].id);
+    }
+  };
+
+  const renameDoc = (id: string, newTitle: string) => {
+    setDocuments((prev) =>
+      prev.map((d) => d.id === id ? { ...d, title: newTitle || "Tài liệu chưa đặt tên", updatedAt: Date.now() } : d)
+    );
+  };
+
+  // 4. LocalStorage Sync Effects
   useEffect(() => {
-    localStorage.setItem("composer_text", text);
-  }, [text]);
+    localStorage.setItem("composer_documents_v2", JSON.stringify(documents));
+  }, [documents]);
 
   useEffect(() => {
-    localStorage.setItem("composer_style_id", selectedStyle.id);
-  }, [selectedStyle]);
+    localStorage.setItem("composer_active_doc_id", activeDocId);
+  }, [activeDocId]);
 
-  useEffect(() => {
-    localStorage.setItem("composer_settings", JSON.stringify(settings));
-  }, [settings]);
-
-  // 4. Trigger Word Online simulation
+  // 5. Trigger Word Online simulation
   const handleExport = () => {
     if (blocks.length === 0) return;
     setShowWordSimulator(true);
@@ -72,7 +158,7 @@ function App() {
 
   const handleDownloadDocx = async () => {
     if (blocks.length === 0) return;
-    await exportToDocx(blocks, selectedStyle, settings);
+    await exportToDocx(blocks, activeDoc.style, activeDoc.settings);
   };
 
   return (
@@ -154,25 +240,31 @@ function App() {
         <div className="hidden lg:flex w-full h-full overflow-hidden">
           {/* Left Config Panel */}
           <Sidebar
-            selectedStyle={selectedStyle}
-            onStyleSelect={setSelectedStyle}
-            settings={settings}
-            onSettingsChange={setSettings}
+            selectedStyle={activeDoc.style}
+            onStyleSelect={updateActiveDocStyle}
+            settings={activeDoc.settings}
+            onSettingsChange={updateActiveDocSettings}
             onExport={handleExport}
             disabled={blocks.length === 0}
+            documents={documents}
+            activeDocId={activeDocId}
+            onCreateDoc={createNewDoc}
+            onDeleteDoc={deleteDoc}
+            onRenameDoc={renameDoc}
+            onSwitchDoc={setActiveDocId}
           />
           
           {/* Middle Editor Panel */}
           <div className="flex-1 h-full p-4 flex flex-col min-w-0">
-            <Editor text={text} onChange={setText} onExport={handleExport} />
+            <Editor text={activeDoc.text} onChange={updateActiveDocText} onExport={handleExport} />
           </div>
 
           {/* Right Live Preview Panel */}
           <div className="flex-1 h-full p-4 pl-0 flex flex-col min-w-0">
             <PreviewPanel
               blocks={blocks}
-              style={selectedStyle}
-              settings={settings}
+              style={activeDoc.style}
+              settings={activeDoc.settings}
             />
           </div>
         </div>
@@ -182,19 +274,25 @@ function App() {
           {mobileTab === "settings" && (
             <div className="flex-1 h-full overflow-y-auto">
               <Sidebar
-                selectedStyle={selectedStyle}
-                onStyleSelect={setSelectedStyle}
-                settings={settings}
-                onSettingsChange={setSettings}
+                selectedStyle={activeDoc.style}
+                onStyleSelect={updateActiveDocStyle}
+                settings={activeDoc.settings}
+                onSettingsChange={updateActiveDocSettings}
                 onExport={handleExport}
                 disabled={blocks.length === 0}
+                documents={documents}
+                activeDocId={activeDocId}
+                onCreateDoc={createNewDoc}
+                onDeleteDoc={deleteDoc}
+                onRenameDoc={renameDoc}
+                onSwitchDoc={setActiveDocId}
               />
             </div>
           )}
 
           {mobileTab === "write" && (
             <div className="flex-1 h-full flex flex-col min-h-0">
-              <Editor text={text} onChange={setText} onExport={handleExport} />
+              <Editor text={activeDoc.text} onChange={updateActiveDocText} onExport={handleExport} />
             </div>
           )}
 
@@ -202,8 +300,8 @@ function App() {
             <div className="flex-1 h-full flex flex-col min-h-0">
               <PreviewPanel
                 blocks={blocks}
-                style={selectedStyle}
-                settings={settings}
+                style={activeDoc.style}
+                settings={activeDoc.settings}
               />
             </div>
           )}
@@ -216,12 +314,12 @@ function App() {
           isOpen={showWordSimulator}
           onClose={() => setShowWordSimulator(false)}
           blocks={blocks}
-          style={selectedStyle}
-          settings={settings}
+          style={activeDoc.style}
+          settings={activeDoc.settings}
           onDownload={handleDownloadDocx}
-          onChange={setText}
-          onStyleChange={setSelectedStyle}
-          onSettingsChange={setSettings}
+          onChange={updateActiveDocText}
+          onStyleChange={updateActiveDocStyle}
+          onSettingsChange={updateActiveDocSettings}
         />
       )}
     </div>

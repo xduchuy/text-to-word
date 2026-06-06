@@ -27,7 +27,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
   };
 
   const getParagraphStyle = () => {
-    return `${style.bodyFontClass} text-[14px] leading-relaxed mb-4 ${
+    return `${style.bodyFontClass} leading-relaxed mb-4 ${
       style.justifyText ? "text-justify" : "text-left"
     } ${style.textClass}`;
   };
@@ -65,8 +65,9 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
         ) : (
           /* Simulated Page */
           <div
+            id="preview-sheet"
             style={{ fontFamily: style.bodyFontFamily }}
-            className={`shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-border transition-all duration-300 relative flex flex-col justify-between max-w-full ${
+            className={`word-sheet shadow-[8px_8px_0px_rgba(0,0,0,0.15)] border-2 lg:border-4 border-ink-border transition-all duration-300 relative flex flex-col justify-between max-w-full ${
               style.pageBgClass
             } ${marginPreset.css} ${
               isLandscape
@@ -137,6 +138,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                       <p
                         key={idx}
                         className={getParagraphStyle()}
+                        style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                         dangerouslySetInnerHTML={{ __html: mdToHtmlInline(block.text) }}
                       />
                     );
@@ -145,7 +147,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                     return (
                       <ul
                         key={idx}
-                        className={`list-disc pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
+                        className={`list-disc pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                        style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                       >
                         {block.items.map((item, itemIdx) => (
                           <li
@@ -160,7 +163,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                     return (
                       <ol
                         key={idx}
-                        className={`list-decimal pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
+                        className={`list-decimal pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                        style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                       >
                         {block.items.map((item, itemIdx) => (
                           <li
@@ -175,11 +179,12 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                     return (
                       <div
                         key={idx}
-                        className="border-l-4 pl-4 py-2 my-4 italic text-[14px] leading-relaxed transition-all"
+                        className="border-l-4 pl-4 py-2 my-4 italic leading-relaxed transition-all"
                         style={{
                           borderColor: `#${style.quoteBorderColor}`,
                           backgroundColor: style.quoteBgColor ? `#${style.quoteBgColor}` : "transparent",
                           color: `#${style.docxTextColor}`,
+                          fontSize: `${style.docxFontSize / 2}pt`
                         }}
                       >
                         {block.text.split("\n").map((line, lIdx) => (
@@ -253,6 +258,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                                      <td
                                        key={cIdx}
                                        className="p-3 text-zinc-600"
+                                       style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                                        dangerouslySetInnerHTML={{ __html: mdToHtmlInline(cell) }}
                                      />
                                    ))}

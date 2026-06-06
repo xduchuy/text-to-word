@@ -191,3 +191,63 @@ font[size="4"] { font-size: 16px !important; }   /* 12pt */
 font[size="5"] { font-size: 18.7px !important; } /* 14pt */
 font[size="6"] { font-size: 24px !important; }   /* 18pt */
 font[size="7"] { font-size: 32px !important; }   /* 24pt */
+
+/* --- Advanced Print & PDF Layout Overrides --- */
+@media print {
+  /* Hide all core elements, sidebar, editor panels, menus, overlays, buttons, rulers, footer status bar, scroll indicators, etc. */
+  html, body, #root, header, aside, footer, button, select, input, .fixed, .absolute:not(.word-sheet *), svg, nav {
+    visibility: hidden !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  body {
+    background-image: none !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Force display only the active word sheet and its structural children */
+  .word-sheet, .word-sheet * {
+    visibility: visible !important;
+  }
+
+  /* Ensure the sheet fills the printed region exactly, overrides shadows and zoom scales */
+  #preview-sheet, #simulator-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 2.54cm !important; /* Standard 1 inch page margin */
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* When the simulator is open, hide the background preview panel to prevent double sheet print overlap */
+  body:has(#simulator-sheet) #preview-sheet,
+  body:has(#simulator-sheet) #preview-sheet * {
+    visibility: hidden !important;
+    display: none !important;
+  }
+
+  /* Ensure paragraphs, headings, list entries, block quotes, and table elements avoid awkward break cuts across sheets */
+  p, h1, h2, h3, h4, table, blockquote, pre, ul, ol, li, tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Setup standard document print margin */
+  @page {
+    size: auto;
+    margin: 0;
+  }
+}

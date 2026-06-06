@@ -246,7 +246,7 @@ export async function exportToDocx(
                 new TextRun({
                   text: seg.text,
                   font: style.docxFont,
-                  size: seg.size ?? 22, // 11pt
+                  size: seg.size ?? style.docxFontSize,
                   bold: seg.bold,
                   italics: seg.italic,
                   underline: seg.underline ? {} : undefined,
@@ -275,7 +275,7 @@ export async function exportToDocx(
                   new TextRun({
                     text: seg.text,
                     font: style.docxFont,
-                    size: seg.size ?? 22, // 11pt
+                    size: seg.size ?? style.docxFontSize,
                     bold: seg.bold,
                     italics: seg.italic,
                     underline: seg.underline ? {} : undefined,
@@ -305,7 +305,7 @@ export async function exportToDocx(
                   new TextRun({
                     text: seg.text,
                     font: style.docxFont,
-                    size: seg.size ?? 22, // 11pt
+                    size: seg.size ?? style.docxFontSize,
                     bold: seg.bold,
                     italics: seg.italic,
                     underline: seg.underline ? {} : undefined,
@@ -355,7 +355,7 @@ export async function exportToDocx(
                               new TextRun({
                                 text: seg.text,
                                 font: style.docxFont,
-                                size: seg.size ?? 22, // 11pt
+                                size: seg.size ?? style.docxFontSize,
                                 italics: seg.italic ?? true, // Quote is italicized by default
                                 bold: seg.bold,
                                 underline: seg.underline ? {} : undefined,
@@ -484,7 +484,7 @@ export async function exportToDocx(
                               new TextRun({
                                 text: seg.text,
                                 font: style.docxFont,
-                                size: seg.size ?? 22,
+                                size: seg.size ?? style.docxFontSize,
                                 bold: seg.bold,
                                 italics: seg.italic,
                                 underline: seg.underline ? {} : undefined,

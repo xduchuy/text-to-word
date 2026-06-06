@@ -6,7 +6,8 @@ import { marginPresets } from "../utils/styles";
 import {
   X, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Download, Search, HelpCircle, Check,
-  Globe, Share2, Undo2, Redo2, Type, RefreshCw
+  Globe, Share2, Undo2, Redo2, Type, RefreshCw,
+  Table, Quote, Minus
 } from "lucide-react";
 import { playClickSound } from "../utils/sound";
 
@@ -128,6 +129,12 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false);
   const [currentFontSize, setCurrentFontSize] = useState("11");
 
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+
+  const lastFocusedBlockIdxRef = useRef<number>(0);
+
   const savedRangeRef = useRef<Range | null>(null);
   const saveSelection = () => {
     const sel = window.getSelection();
@@ -244,6 +251,107 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
     }
   }, [isOpen]);
 
+  const insertBlock = (type: "table" | "quote" | "divider") => {
+    playClickSound();
+    const idx = lastFocusedBlockIdxRef.current;
+    
+    let newBlock: Block;
+    if (type === "table") {
+      newBlock = {
+        type: "table",
+        headers: ["Tiêu đề 1", "Tiêu đề 2"],
+        rows: [["Nội dung A1", "Nội dung A2"], ["Nội dung B1", "Nội dung B2"]],
+      };
+    } else if (type === "quote") {
+      newBlock = {
+        type: "quote",
+        text: "Đây là một trích dẫn quan trọng.",
+      };
+    } else {
+      newBlock = {
+        type: "paragraph",
+        text: "---",
+      };
+    }
+    
+    const newBlocks = [...blocks];
+    newBlocks.splice(idx + 1, 0, newBlock);
+    updateBlocksState(newBlocks);
+    lastFocusedBlockIdxRef.current = idx + 1;
+  };
+
+  const handleFindNext = () => {
+    if (!findText) return;
+    playClickSound();
+    const found = (window as any).find(findText, false, false, true, false, false, false);
+    if (!found) {
+      alert("Không tìm thấy văn bản phù hợp.");
+    }
+  };
+
+  const handleReplaceAll = () => {
+    if (!findText) return;
+    playClickSound();
+    
+    let replaceCount = 0;
+    const regex = new RegExp(findText.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+    
+    const countMatches = (str: string) => {
+      const matches = str.match(regex);
+      return matches ? matches.length : 0;
+    };
+    
+    const updated = blocks.map((block) => {
+      switch (block.type) {
+        case "title":
+        case "heading1":
+        case "heading2":
+        case "heading3":
+        case "paragraph":
+        case "quote":
+          replaceCount += countMatches(block.text);
+          return { ...block, text: block.text.replace(regex, replaceText) };
+          
+        case "bullet-list":
+        case "numbered-list":
+          const newItems = block.items.map((item) => {
+            replaceCount += countMatches(item);
+            return item.replace(regex, replaceText);
+          });
+          return { ...block, items: newItems };
+          
+        case "code":
+          replaceCount += countMatches(block.code);
+          return { ...block, code: block.code.replace(regex, replaceText) };
+          
+        case "table":
+          const newHeaders = block.headers.map((h) => {
+            replaceCount += countMatches(h);
+            return h.replace(regex, replaceText);
+          });
+          const newRows = block.rows.map((row) =>
+            row.map((cell) => {
+              replaceCount += countMatches(cell);
+              return cell.replace(regex, replaceText);
+            })
+          );
+          return { ...block, headers: newHeaders, rows: newRows };
+          
+        default:
+          return block;
+      }
+    });
+    
+    if (replaceCount > 0) {
+      updateBlocksState(updated);
+      alert(`Đã thay thế thành công ${replaceCount} vị trí.`);
+    } else {
+      alert("Không tìm thấy văn bản phù hợp.");
+    }
+  };
+
+
+
   const syncActiveElement = () => {
     const activeEl = document.activeElement;
     if (!activeEl || !(activeEl instanceof HTMLElement)) return;
@@ -308,6 +416,63 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
       setTimeout(() => setShowDownloadSuccess(false), 3000);
     }, 1200); // 1.2s simulated compilation & packaging
   };
+
+  const syncActiveElementRef = useRef(syncActiveElement);
+  useEffect(() => {
+    syncActiveElementRef.current = syncActiveElement;
+  });
+
+  const handleDownloadClickRef = useRef(handleDownloadClick);
+  useEffect(() => {
+    handleDownloadClickRef.current = handleDownloadClick;
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        const key = e.key.toLowerCase();
+        if (key === 'b') {
+          e.preventDefault();
+          playClickSound();
+          document.execCommand("bold");
+          syncActiveElementRef.current();
+        } else if (key === 'i') {
+          e.preventDefault();
+          playClickSound();
+          document.execCommand("italic");
+          syncActiveElementRef.current();
+        } else if (key === 'u') {
+          e.preventDefault();
+          playClickSound();
+          document.execCommand("underline");
+          syncActiveElementRef.current();
+        } else if (key === 'z') {
+          e.preventDefault();
+          playClickSound();
+          document.execCommand("undo");
+          setTimeout(() => {
+            syncActiveElementRef.current();
+          }, 0);
+        } else if (key === 'y') {
+          e.preventDefault();
+          playClickSound();
+          document.execCommand("redo");
+          setTimeout(() => {
+            syncActiveElementRef.current();
+          }, 0);
+        } else if (key === 's') {
+          e.preventDefault();
+          playClickSound();
+          handleDownloadClickRef.current();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   const selectTab = (tab: "home" | "insert" | "layout" | "view") => {
     playClickSound();
@@ -684,12 +849,57 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                     <AlignJustify className="w-3.5 h-3.5" />
                   </button>
                 </div>
+
+                <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
+
+                {/* Find & Replace trigger */}
+                <button
+                  onClick={() => {
+                    playClickSound();
+                    setShowFindReplace(!showFindReplace);
+                  }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded hover:bg-zinc-100 dark:hover:bg-[#3F3F46] border border-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-200 cursor-pointer ${
+                    showFindReplace ? "bg-zinc-100 dark:bg-[#3F3F46] text-[#185abd] border-zinc-200 dark:border-[#3F3F46]" : ""
+                  }`}
+                  title="Tìm kiếm và thay thế văn bản"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Tìm & Thay thế</span>
+                </button>
               </>
             )}
 
             {activeTab === "insert" && (
-              <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono italic">
-                <span>Chèn bảng, Hình ảnh, Tiêu đề trang, Header/Footer...</span>
+              <div className="flex items-center gap-2">
+                {/* Insert Table */}
+                <button
+                  onClick={() => insertBlock("table")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn bảng mới tại vị trí con trỏ"
+                >
+                  <Table className="w-3.5 h-3.5 text-[#185abd]" />
+                  <span>Bảng</span>
+                </button>
+
+                {/* Insert Quote */}
+                <button
+                  onClick={() => insertBlock("quote")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn khối trích dẫn mới tại vị trí con trỏ"
+                >
+                  <Quote className="w-3.5 h-3.5 text-[#185abd]" />
+                  <span>Trích dẫn</span>
+                </button>
+
+                {/* Insert Divider */}
+                <button
+                  onClick={() => insertBlock("divider")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn đường kẻ ngang (---) tại vị trí con trỏ"
+                >
+                  <Minus className="w-3.5 h-3.5 text-[#185abd]" />
+                  <span>Đường kẻ</span>
+                </button>
               </div>
             )}
 
@@ -839,6 +1049,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
             <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start">
               
               <div 
+                id="simulator-sheet"
                 style={{ 
                   transform: `scale(${zoom / 100})`, 
                   transformOrigin: "top center",
@@ -846,7 +1057,14 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                 }}
                 onMouseUp={saveSelection}
                 onKeyUp={saveSelection}
-                className={`shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] ${
+                onFocusCapture={(e) => {
+                  const target = e.target as HTMLElement;
+                  const blockIdxAttr = target.getAttribute("data-block-idx");
+                  if (blockIdxAttr !== null) {
+                    lastFocusedBlockIdxRef.current = parseInt(blockIdxAttr, 10);
+                  }
+                }}
+                className={`word-sheet shadow-2xl border border-zinc-300 dark:border-[#3F3F46] transition-all duration-300 relative flex flex-col justify-between max-w-full origin-top shrink-0 bg-white dark:bg-[#1E1E20] ${
                   marginPreset.css
                 } ${
                   isLandscape
@@ -924,9 +1142,10 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <EditableBlock
                             tagName="p"
-                            className={`${style.bodyFontClass} text-[14px] leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
+                            className={`${style.bodyFontClass} leading-relaxed mb-4 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100 ${
                               style.justifyText ? "text-justify" : "text-left"
                             } ${style.textClass}`}
+                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                             text={block.text}
                             onSave={(newMd) => updateBlockText(idx, newMd)}
                             data-block-idx={idx}
@@ -937,7 +1156,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <ul
                             key={idx}
-                            className={`list-disc pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
+                            className={`list-disc pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                           >
                             {block.items.map((item, itemIdx) => (
                               <EditableBlock
@@ -957,7 +1177,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <ol
                             key={idx}
-                            className={`list-decimal pl-6 mb-4 space-y-1.5 text-[14px] ${style.bodyFontClass} ${style.textClass}`}
+                            className={`list-decimal pl-6 mb-4 space-y-1.5 ${style.bodyFontClass} ${style.textClass}`}
+                            style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                           >
                             {block.items.map((item, itemIdx) => (
                               <EditableBlock
@@ -977,12 +1198,13 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                         return (
                           <EditableBlock
                             tagName="div"
-                            className="border-l-4 pl-4 py-2 my-4 italic text-[14px] leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
+                            className="border-l-4 pl-4 py-2 my-4 italic leading-relaxed transition-all outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded p-1 -m-1 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70"
                             style={{
                               borderColor: `#${style.quoteBorderColor}`,
                               backgroundColor: style.quoteBgColor ? `#${style.quoteBgColor}` : "transparent",
                               color: `#${style.docxTextColor}`,
                               whiteSpace: "pre-wrap",
+                              fontSize: `${style.docxFontSize / 2}pt`
                             }}
                             text={block.text}
                             onSave={(newMd) => updateBlockText(idx, newMd)}
@@ -1064,6 +1286,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                                           key={cIdx}
                                           tagName="td"
                                           className="p-3 text-zinc-600 dark:text-zinc-300 outline-none hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-text focus:ring-2 focus:ring-[#185abd]/30 focus:bg-white dark:focus:bg-zinc-800/70 transition-colors duration-100"
+                                          style={{ fontSize: `${style.docxFontSize / 2}pt` }}
                                           text={cell}
                                           onSave={(newMd) => updateTableCellText(idx, rIdx, cIdx, newMd)}
                                           data-block-idx={idx}
@@ -1095,6 +1318,61 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
               </div>
 
             </div>
+
+            {/* Find & Replace Side Pane */}
+            {showFindReplace && (
+              <div className="w-64 bg-white dark:bg-[#202023] border-l border-zinc-200 dark:border-[#3F3F46] p-4 flex flex-col gap-3 shrink-0 shadow-lg select-none">
+                <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#3F3F46] pb-2">
+                  <h4 className="font-bold text-xs text-zinc-800 dark:text-zinc-100 font-mono">TÌM & THAY THẾ</h4>
+                  <button 
+                    onClick={() => { playClickSound(); setShowFindReplace(false); }}
+                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Find Input */}
+                <div>
+                  <label className="block text-[9px] font-mono font-bold text-zinc-500 mb-1">TÌM VĂN BẢN</label>
+                  <input
+                    type="text"
+                    value={findText}
+                    onChange={(e) => setFindText(e.target.value)}
+                    placeholder="Từ khóa cần tìm..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-zinc-300 dark:border-[#3F3F46] bg-zinc-50 dark:bg-[#1E1E21] text-zinc-800 dark:text-zinc-100 rounded focus:outline-hidden focus:border-[#185abd] focus:ring-1 focus:ring-[#185abd]"
+                  />
+                </div>
+
+                {/* Replace Input */}
+                <div>
+                  <label className="block text-[9px] font-mono font-bold text-zinc-500 mb-1">THAY THẾ BẰNG</label>
+                  <input
+                    type="text"
+                    value={replaceText}
+                    onChange={(e) => setReplaceText(e.target.value)}
+                    placeholder="Văn bản thay thế..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-zinc-300 dark:border-[#3F3F46] bg-zinc-50 dark:bg-[#1E1E21] text-zinc-800 dark:text-zinc-100 rounded focus:outline-hidden focus:border-[#185abd] focus:ring-1 focus:ring-[#185abd]"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={handleFindNext}
+                    className="flex-1 py-1.5 bg-zinc-100 dark:bg-[#3F3F46] hover:bg-zinc-200 dark:hover:bg-[#52525B] text-[11px] font-bold text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-[#3F3F46] rounded cursor-pointer transition-colors"
+                  >
+                    Tìm tiếp
+                  </button>
+                  <button
+                    onClick={handleReplaceAll}
+                    className="flex-1 py-1.5 bg-[#185abd] hover:bg-blue-600 text-[11px] font-bold text-white rounded cursor-pointer transition-colors"
+                  >
+                    Thay thế tất cả
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

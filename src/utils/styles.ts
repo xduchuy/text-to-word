@@ -16,6 +16,7 @@ export interface DocumentStyle {
   
   // Word Document XML Export Styling
   docxFont: string;
+  docxFontSize: number;     // Half-points (e.g., 22 = 11pt, 24 = 12pt, 28 = 14pt)
   docxPrimaryColor: string; // Hex color code
   docxTextColor: string;    // Hex color code
   docxLineSpacing: number;  // Twips (240 twips = 1.0, 360 twips = 1.5, 480 twips = 2.0)
@@ -49,6 +50,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-black",
     justifyText: false,
     docxFont: "Calibri",
+    docxFontSize: 22, // 11pt
     docxPrimaryColor: "000000", // Standard Black
     docxTextColor: "000000",
     docxLineSpacing: 276, // 1.15 Line Spacing
@@ -76,6 +78,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-slate-900",
     justifyText: true,
     docxFont: "Times New Roman",
+    docxFontSize: 24, // 12pt
     docxPrimaryColor: "1E3A8A", // Deep Navy
     docxTextColor: "000000",
     docxLineSpacing: 360, // 1.5 Line Spacing (equivalent to 18pt in Word)
@@ -103,6 +106,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-zinc-800",
     justifyText: false,
     docxFont: "Arial",
+    docxFontSize: 22, // 11pt
     docxPrimaryColor: "3F3F46", // Zinc 600
     docxTextColor: "18181B",    // Zinc 900
     docxLineSpacing: 288, // 1.2 Line Spacing
@@ -130,6 +134,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-slate-700",
     justifyText: false,
     docxFont: "Calibri",
+    docxFontSize: 22, // 11pt
     docxPrimaryColor: "4F46E5", // Indigo 600
     docxTextColor: "1E293B",    // Slate 800
     docxLineSpacing: 276, // 1.15 Line Spacing
@@ -157,6 +162,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-stone-800",
     justifyText: false,
     docxFont: "Georgia",
+    docxFontSize: 24, // 12pt
     docxPrimaryColor: "9A3412", // Rust / Orange 800
     docxTextColor: "1C1917",    // Stone 900
     docxLineSpacing: 312, // 1.3 Line Spacing
@@ -184,6 +190,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-slate-900",
     justifyText: false,
     docxFont: "Consolas",
+    docxFontSize: 20, // 10pt
     docxPrimaryColor: "059669", // Emerald 600
     docxTextColor: "0F172A",    // Slate 900
     docxLineSpacing: 288, // 1.2 Line Spacing
@@ -211,6 +218,7 @@ export const documentStyles: DocumentStyle[] = [
     textClass: "text-zinc-900",
     justifyText: false,
     docxFont: "Courier New",
+    docxFontSize: 24, // 12pt
     docxPrimaryColor: "E24A32", // Accent Red
     docxTextColor: "1A1A1A",    // Ink Black
     docxLineSpacing: 360, // 1.5 spacing
