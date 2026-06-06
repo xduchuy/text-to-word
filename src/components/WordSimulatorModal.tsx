@@ -7,7 +7,7 @@ import {
   X, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Download, Search, HelpCircle, Check,
   Globe, Share2, Undo2, Redo2, Type, RefreshCw,
-  Table, Quote, Minus
+  Table, Quote, Minus, Mic, Link, Image, Scissors
 } from "lucide-react";
 import { playClickSound } from "../utils/sound";
 
@@ -139,6 +139,8 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
   const lastFocusedBlockIdxRef = useRef<number>(0);
 
   const savedRangeRef = useRef<Range | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const saveSelection = () => {
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
@@ -254,7 +256,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
     }
   }, [isOpen]);
 
-  const insertBlock = (type: "table" | "quote" | "divider") => {
+  const insertBlock = (type: "table" | "quote" | "divider" | "image" | "pagebreak" | "toc") => {
     playClickSound();
     const idx = lastFocusedBlockIdxRef.current;
     
@@ -270,11 +272,31 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
         type: "quote",
         text: "Đây là một trích dẫn quan trọng.",
       };
-    } else {
+    } else if (type === "divider") {
       newBlock = {
         type: "paragraph",
         text: "---",
       };
+    } else if (type === "image") {
+      const url = window.prompt("Nhập URL hình ảnh:", "https://images.unsplash.com/photo-1579546929518-9e396f3cc809");
+      if (url === null) return;
+      const alt = window.prompt("Nhập chú thích ảnh:", "Mô tả ảnh");
+      if (alt === null) return;
+      newBlock = {
+        type: "image",
+        url,
+        alt: alt || "Ảnh",
+      };
+    } else if (type === "pagebreak") {
+      newBlock = {
+        type: "pagebreak",
+      };
+    } else if (type === "toc") {
+      newBlock = {
+        type: "toc",
+      };
+    } else {
+      return;
     }
     
     const newBlocks = [...blocks];
@@ -396,6 +418,108 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
       }
     }
   };
+
+  const insertTextAtCursor = (textToInsert: string) => {
+    const activeEl = document.activeElement;
+    if (!activeEl || !(activeEl instanceof HTMLElement)) return;
+    const editable = activeEl.closest('[contenteditable="true"]');
+    if (!editable) return;
+
+    document.execCommand("insertText", false, textToInsert);
+    syncActiveElement();
+  };
+
+  const handleInsertLink = () => {
+    playClickSound();
+    const sel = window.getSelection();
+    let selectedText = "";
+    if (sel) {
+      selectedText = sel.toString();
+    }
+    const url = window.prompt("Nhập địa chỉ liên kết (URL):", "https://");
+    if (url === null) return;
+    const linkText = window.prompt("Nhập văn bản hiển thị:", selectedText || "Liên kết");
+    if (linkText === null) return;
+    
+    insertTextAtCursor(`[${linkText}](${url})`);
+  };
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Hãy sử dụng Google Chrome hoặc Microsoft Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "vi-VN";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      const lower = transcript.toLowerCase().trim();
+
+      if (lower === "xuống dòng" || lower === "xuống hàng") {
+        document.execCommand("insertLineBreak");
+        syncActiveElement();
+      } else if (lower === "tiêu đề một" || lower === "tiêu đề 1") {
+        insertTextAtCursor("\n# ");
+      } else if (lower === "tiêu đề hai" || lower === "tiêu đề 2") {
+        insertTextAtCursor("\n## ");
+      } else if (lower === "tiêu đề ba" || lower === "tiêu đề 3") {
+        insertTextAtCursor("\n### ");
+      } else if (lower === "gạch đầu dòng") {
+        insertTextAtCursor("\n- ");
+      } else if (lower === "dấu chấm") {
+        insertTextAtCursor(". ");
+      } else if (lower === "dấu phẩy") {
+        insertTextAtCursor(", ");
+      } else {
+        insertTextAtCursor(transcript + " ");
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+  };
+
+  const toggleDictation = () => {
+    playClickSound();
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -875,6 +999,23 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
                 <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
 
+                {/* Voice Dictation */}
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={toggleDictation}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded border border-transparent text-xs font-semibold cursor-pointer transition-all ${
+                    isListening
+                      ? "bg-red-500 text-white animate-pulse border-red-600 shadow-inner"
+                      : "hover:bg-zinc-100 dark:hover:bg-[#3F3F46] text-zinc-700 dark:text-zinc-200"
+                  }`}
+                  title="Nhập văn bản bằng giọng nói (Tiếng Việt)"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  <span>{isListening ? "Đang nghe..." : "Giọng nói"}</span>
+                </button>
+
+                <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
+
                 {/* Find & Replace trigger */}
                 <button
                   onClick={() => {
@@ -893,9 +1034,10 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
             )}
 
             {activeTab === "insert" && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                 {/* Insert Table */}
                 <button
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => insertBlock("table")}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
                   title="Chèn bảng mới tại vị trí con trỏ"
@@ -904,8 +1046,33 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                   <span>Bảng</span>
                 </button>
 
+                {/* Insert Link */}
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleInsertLink}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn liên kết tại vị trí con trỏ"
+                >
+                  <Link className="w-3.5 h-3.5 text-[#185abd]" />
+                  <span>Liên kết</span>
+                </button>
+
+                {/* Insert Image */}
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => insertBlock("image")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn hình ảnh mới"
+                >
+                  <Image className="w-3.5 h-3.5 text-[#185abd]" />
+                  <span>Hình ảnh</span>
+                </button>
+
+                <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
+
                 {/* Insert Quote */}
                 <button
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => insertBlock("quote")}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
                   title="Chèn khối trích dẫn mới tại vị trí con trỏ"
@@ -916,12 +1083,37 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
 
                 {/* Insert Divider */}
                 <button
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => insertBlock("divider")}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
                   title="Chèn đường kẻ ngang (---) tại vị trí con trỏ"
                 >
                   <Minus className="w-3.5 h-3.5 text-[#185abd]" />
                   <span>Đường kẻ</span>
+                </button>
+
+                <span className="w-px h-5 bg-zinc-200 dark:bg-[#3F3F46]" />
+
+                {/* Page Break */}
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => insertBlock("pagebreak")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn điểm Ngắt trang (Page Break)"
+                >
+                  <Scissors className="w-3.5 h-3.5 text-accent-red" />
+                  <span>Ngắt trang</span>
+                </button>
+
+                {/* Table of Contents */}
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => insertBlock("toc")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-50 dark:bg-[#1E1E21] hover:bg-zinc-100 dark:hover:bg-[#2D2D30] border border-zinc-200 dark:border-[#3F3F46] text-xs font-semibold text-zinc-800 dark:text-zinc-100 cursor-pointer"
+                  title="Chèn Mục lục tự động (TOC)"
+                >
+                  <List className="w-3.5 h-3.5 text-accent-blue" />
+                  <span>Mục lục [TOC]</span>
                 </button>
               </div>
             )}
