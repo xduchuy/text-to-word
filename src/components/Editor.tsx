@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText, Bold, Italic, Underline, Link, Image, Table, Scissors, List, Mic } from "lucide-react";
+import { Copy, Check, Trash2, Keyboard, FileUp, Clipboard, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "./EmptyState";
 import { playClickSound } from "../utils/sound";
@@ -18,77 +18,6 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-
-  const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Hãy sử dụng Google Chrome hoặc Microsoft Edge.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "vi-VN";
-
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[event.results.length - 1][0].transcript;
-      const lower = transcript.toLowerCase().trim();
-
-      // Check for spoken smart formatting commands
-      if (lower === "xuống dòng" || lower === "xuống hàng") {
-        insertAtCursor("\n");
-      } else if (lower === "tiêu đề một" || lower === "tiêu đề 1") {
-        insertAtCursor("\n# ");
-      } else if (lower === "tiêu đề hai" || lower === "tiêu đề 2") {
-        insertAtCursor("\n## ");
-      } else if (lower === "tiêu đề ba" || lower === "tiêu đề 3") {
-        insertAtCursor("\n### ");
-      } else if (lower === "gạch đầu dòng") {
-        insertAtCursor("\n- ");
-      } else if (lower === "dấu chấm") {
-        insertAtCursor(". ");
-      } else if (lower === "dấu phẩy") {
-        insertAtCursor(", ");
-      } else {
-        insertAtCursor(transcript + " ");
-      }
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-    setIsListening(false);
-  };
-
-  const toggleDictation = () => {
-    playClickSound();
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
 
   // Calculate statistics
   const charCount = text.length;
@@ -145,76 +74,7 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
     }, 50);
   };
 
-  const handleToolbarAction = (action: string) => {
-    playClickSound();
-    const textarea = textareaRef.current;
-    if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentText = textarea.value;
-    const selected = currentText.substring(start, end);
-
-    let prefix = "";
-    let suffix = "";
-    let placeholder = "";
-
-    switch (action) {
-      case "bold":
-        prefix = "**";
-        suffix = "**";
-        placeholder = "chữ đậm";
-        break;
-      case "italic":
-        prefix = "*";
-        suffix = "*";
-        placeholder = "chữ nghiêng";
-        break;
-      case "underline":
-        prefix = "<u>";
-        suffix = "</u>";
-        placeholder = "gạch chân";
-        break;
-      case "link":
-        prefix = "[";
-        suffix = "](https://)";
-        placeholder = "Tiêu đề liên kết";
-        break;
-      case "image":
-        prefix = "![";
-        suffix = "](https://images.unsplash.com/photo-1579546929518-9e396f3cc809)";
-        placeholder = "Mô tả ảnh";
-        break;
-      case "table":
-        prefix = "\n| Tiêu đề 1 | Tiêu đề 2 |\n|---|---|\n| Nội dung A | Nội dung B |\n";
-        break;
-      case "pagebreak":
-        prefix = "\n---pagebreak---\n";
-        break;
-      case "toc":
-        prefix = "\n[TOC]\n";
-        break;
-      default:
-        break;
-    }
-
-    const replacement = prefix + (selected || placeholder) + suffix;
-    const before = currentText.substring(0, start);
-    const after = currentText.substring(end);
-    
-    onChange(before + replacement + after);
-
-    setTimeout(() => {
-      textarea.focus();
-      if (selected) {
-        textarea.setSelectionRange(start, start + replacement.length);
-      } else {
-        const placeholderStart = start + prefix.length;
-        const placeholderEnd = placeholderStart + placeholder.length;
-        textarea.setSelectionRange(placeholderStart, placeholderEnd);
-      }
-    }, 50);
-  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -416,99 +276,14 @@ export const Editor: React.FC<EditorProps> = ({ text, onChange, onExport }) => {
             <EmptyState onSelectTemplate={onChange} />
           </div>
         ) : (
-          <>
-            {/* Quick Markdown Formatting Toolbar */}
-            <div className="flex flex-wrap items-center gap-1 p-2 bg-[#FAF9F5] border-b-2 border-ink-border shrink-0 select-none">
-              <button
-                onClick={() => handleToolbarAction("bold")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chữ đậm"
-              >
-                <Bold className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleToolbarAction("italic")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chữ nghiêng"
-              >
-                <Italic className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleToolbarAction("underline")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Gạch chân HTML"
-              >
-                <Underline className="w-3.5 h-3.5" />
-              </button>
-              
-              <span className="w-px h-4 bg-zinc-300 mx-1" />
-              
-              <button
-                onClick={() => handleToolbarAction("link")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chèn liên kết"
-              >
-                <Link className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleToolbarAction("image")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chèn ảnh"
-              >
-                <Image className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleToolbarAction("table")}
-                className="p-1.5 hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chèn bảng"
-              >
-                <Table className="w-3.5 h-3.5" />
-              </button>
-              
-              <span className="w-px h-4 bg-zinc-300 mx-1" />
-
-              <button
-                onClick={() => handleToolbarAction("pagebreak")}
-                className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold bg-[#FAF9F5] border border-ink-border hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chèn điểm Ngắt trang (Page Break)"
-              >
-                <Scissors className="w-3 h-3 text-accent-red" />
-                <span>Ngắt trang</span>
-              </button>
-              <button
-                onClick={() => handleToolbarAction("toc")}
-                className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold bg-[#FAF9F5] border border-ink-border hover:bg-zinc-200 rounded text-ink-black cursor-pointer transition-colors"
-                title="Chèn Mục lục tự động (TOC)"
-              >
-                <List className="w-3 h-3 text-accent-blue" />
-                <span>Mục lục [TOC]</span>
-              </button>
-              
-              <span className="w-px h-4 bg-zinc-300 mx-1" />
-
-              <button
-                onClick={toggleDictation}
-                className={`flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold border border-ink-border rounded text-ink-black cursor-pointer transition-all ${
-                  isListening 
-                    ? "bg-red-500 text-white animate-pulse shadow-inner border-red-600" 
-                    : "bg-[#FAF9F5] hover:bg-zinc-200"
-                }`}
-                title="Nhập văn bản bằng giọng nói (Tiếng Việt)"
-              >
-                <Mic className="w-3.5 h-3.5" />
-                <span>{isListening ? "Đang nghe..." : "Giọng nói"}</span>
-              </button>
-            </div>
-            
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Nhập hoặc dán nội dung văn bản hoặc markdown vào đây..."
-              className="flex-1 w-full p-8 text-ink-black placeholder-zinc-500 bg-transparent border-0 outline-hidden focus:ring-0 resize-none font-mono text-sm leading-[31px] bg-notebook-lines overflow-y-auto selection:bg-accent-yellow"
-            />
-          </>
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Nhập hoặc dán nội dung văn bản hoặc markdown vào đây..."
+            className="flex-1 w-full p-8 text-ink-black placeholder-zinc-500 bg-transparent border-0 outline-hidden focus:ring-0 resize-none font-mono text-sm leading-[31px] bg-notebook-lines overflow-y-auto selection:bg-accent-yellow"
+          />
         )}
       </div>
 
