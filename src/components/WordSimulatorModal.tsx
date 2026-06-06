@@ -1302,7 +1302,7 @@ export const WordSimulatorModal: React.FC<WordSimulatorModalProps> = ({
                     )}
 
                     {/* Content body */}
-                    <div className="flex-1 w-full text-slate-800 dark:text-zinc-200 mt-2">
+                    <div className="flex-1 w-full min-w-0 text-slate-800 dark:text-zinc-200 mt-2">
                       {pageBlocks.map((block) => {
                         const idx = blocks.indexOf(block);
                         switch (block.type) {

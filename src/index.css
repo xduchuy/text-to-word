@@ -255,6 +255,10 @@ font[size="7"] { font-size: 32px !important; }   /* 24pt */
 }
 
 /* Ensure proper word wrapping inside word simulator and preview sheets */
+.word-sheet * {
+  min-width: 0 !important;
+}
+
 .word-sheet p, 
 .word-sheet h1, 
 .word-sheet h2, 
@@ -262,8 +266,10 @@ font[size="7"] { font-size: 32px !important; }   /* 24pt */
 .word-sheet h4, 
 .word-sheet li, 
 .word-sheet td, 
-.word-sheet th {
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
+.word-sheet th,
+.word-sheet [contenteditable="true"] {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
   word-wrap: break-word !important;
+  white-space: pre-wrap !important;
 }

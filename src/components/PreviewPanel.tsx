@@ -111,7 +111,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ blocks, style, setti
                 )}
 
                 {/* Main content body */}
-                <div className="flex-1 w-full text-slate-800 mt-2">
+                <div className="flex-1 w-full min-w-0 text-slate-800 mt-2">
                   {pageBlocks.map((block) => {
                     const idx = blocks.indexOf(block);
                     switch (block.type) {
